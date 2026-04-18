@@ -38,7 +38,11 @@ local function InitializeScript()
     local _UI_Visible = true
     local originalTransparency = {}
 
-    -- [[ ESP & Wallhack 統合ロジック ]]
+    -- [[ 無限ジャンプ設定 ]]
+    local jumpForce = 50
+    local clampFallSpeed = 80
+
+    -- [[ ESP & Wallhack & InfJump 統合ロジック ]]
     local function isPlayerBase(obj)
         if not (obj:IsA("BasePart") or obj:IsA("MeshPart") or obj:IsA("UnionOperation")) then return false end
         local n = obj.Name:lower()
@@ -47,11 +51,13 @@ local function InitializeScript()
     end
 
     local baseEspInstances = {}
-    local function updateESPLogic()
+    
+    _R_S.Heartbeat:Connect(function()
         local plotsFolder = _W_S:FindFirstChild("Plots")
-        
+        local char = LocalPlayer.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+
         if not getgenv()._ESP_Active then 
-            -- OFFの時の処理（ESP削除 & 透明度復元）
             if plotsFolder then
                 for _, plot in ipairs(plotsFolder:GetChildren()) do
                     if plot:FindFirstChild("rznnq"..plot.Name) then plot["rznnq"..plot.Name]:Destroy() end
@@ -60,11 +66,11 @@ local function InitializeScript()
             for obj, trans in pairs(originalTransparency) do
                 if obj and obj.Parent then obj.LocalTransparencyModifier = trans end
             end
+            originalTransparency = {}
             baseEspInstances = {}
             return 
         end
 
-        -- ONの時の処理（タイマー表示）
         if plotsFolder then
             for _, plot in ipairs(plotsFolder:GetChildren()) do
                 local purchases = plot:FindFirstChild("Purchases")
@@ -88,16 +94,24 @@ local function InitializeScript()
             end
         end
 
-        -- Wallhack処理（ベース透過）
         for _, obj in ipairs(_W_S:GetDescendants()) do
             if isPlayerBase(obj) then
                 if not originalTransparency[obj] then originalTransparency[obj] = obj.LocalTransparencyModifier end
                 obj.LocalTransparencyModifier = 0.8
             end
         end
-    end
 
-    _R_S.RenderStepped:Connect(updateESPLogic)
+        if hrp and hrp.Velocity.Y < -clampFallSpeed then
+            hrp.Velocity = Vector3.new(hrp.Velocity.X, -clampFallSpeed, hrp.Velocity.Z)
+        end
+    end)
+
+    _U_I.JumpRequest:Connect(function()
+        if not getgenv()._ESP_Active then return end
+        local char = LocalPlayer.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        if hrp then hrp.Velocity = Vector3.new(hrp.Velocity.X, jumpForce, hrp.Velocity.Z) end
+    end)
 
     -- [機能: UI構築]
     local function BuildMainUI()
@@ -150,7 +164,7 @@ local function InitializeScript()
         end
 
         _Add("AUTO STEAL", {"_AutoSteal"}, 35)
-        _Add("ALL LAG (0.02s)", {"_ApexLagKill", "_TakeshiLagActive", "v2"}, 75, function(s) if s then StartTakeshiLagLogic() end end)
+        _Add("ALL LAG (0.03s)", {"_ApexLagKill", "_TakeshiLagActive", "v2"}, 75, function(s) if s then StartTakeshiLagLogic() end end)
         _Add("ESP", {"_ESP_Active"}, 115)
         _Add("RESPAWN", nil, 155, function() 
             local char = LocalPlayer.Character
@@ -166,6 +180,7 @@ local function InitializeScript()
         _U_I.InputBegan:Connect(function(i, g) if not g and i.KeyCode == Enum.KeyCode.L then _UI_Visible = not _UI_Visible; main.Visible = _UI_Visible end end)
     end
 
+    -- [[ ラグロジック（0.03s に調整） ]]
     function StartTakeshiLagLogic()
         task.spawn(function()
             local activeTools = {"bat","laser cape","laser gun"}
@@ -177,15 +192,19 @@ local function InitializeScript()
                         if tool:IsA("Tool") then
                             local name = string.lower(tool.Name)
                             for _, target in ipairs(activeTools) do
-                                if string.find(name, target) then tool.Parent = char; tool:Activate(); task.wait(0.02); tool.Parent = bp end
+                                if string.find(name, target) then 
+                                    tool.Parent = char; tool:Activate(); task.wait(0.03); tool.Parent = bp 
+                                end
                             end
                             for _, target in ipairs(swapOnlyTools) do
-                                if string.find(name, target) then tool.Parent = char; task.wait(0.02); tool.Parent = bp end
+                                if string.find(name, target) then 
+                                    tool.Parent = char; task.wait(0.03); tool.Parent = bp 
+                                end
                             end
                         end
                     end
                 end
-                task.wait(0.02) 
+                task.wait(0.03) 
             end
         end)
     end
