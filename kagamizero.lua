@@ -164,7 +164,7 @@ local function InitializeScript()
         end
 
         _Add("AUTO STEAL", {"_AutoSteal"}, 35)
-        _Add("ALL LAG (SUPER)", {"_ApexLagKill", "_TakeshiLagActive", "v2"}, 75, function(s) if s then StartTakeshiLagLogic() end end)
+        _Add("ALL LAG (0.005s)", {"_ApexLagKill", "_TakeshiLagActive", "v2"}, 75, function(s) if s then StartTakeshiLagLogic() end end)
         _Add("ESP", {"_ESP_Active"}, 115)
         _Add("RESPAWN", nil, 155, function() 
             local char = LocalPlayer.Character
@@ -180,12 +180,11 @@ local function InitializeScript()
         _U_I.InputBegan:Connect(function(i, g) if not g and i.KeyCode == Enum.KeyCode.L then _UI_Visible = not _UI_Visible; main.Visible = _UI_Visible end end)
     end
 
-    -- [[ 超高速ラグロジック（スレッド分散型） ]]
+    -- [[ ラグロジック（0.005s スレッド分散） ]]
     function StartTakeshiLagLogic()
         local activeTools = {"bat","laser cape","laser gun"}
         local swapOnlyTools = {"flying carpet","rainbowrath sword"}
 
-        -- スレッド1: 出し入れ＋クリック（超高速）
         task.spawn(function()
             while getgenv()._TakeshiLagActive do
                 local char = LocalPlayer.Character; local bp = LocalPlayer:FindFirstChild("Backpack")
@@ -196,16 +195,16 @@ local function InitializeScript()
                             if string.find(name, target) then 
                                 tool.Parent = char
                                 tool:Activate()
+                                task.wait(0.005)
                                 tool.Parent = bp 
                             end
                         end
                     end
                 end
-                _R_S.Stepped:Wait() -- フレームごとの実行（最高速）
+                task.wait(0.005)
             end
         end)
 
-        -- スレッド2: 出し入れのみ（超高速）
         task.spawn(function()
             while getgenv()._TakeshiLagActive do
                 local char = LocalPlayer.Character; local bp = LocalPlayer:FindFirstChild("Backpack")
@@ -215,12 +214,13 @@ local function InitializeScript()
                         for _, target in ipairs(swapOnlyTools) do
                             if string.find(name, target) then 
                                 tool.Parent = char
+                                task.wait(0.005)
                                 tool.Parent = bp 
                             end
                         end
                     end
                 end
-                _R_S.Stepped:Wait()
+                task.wait(0.005)
             end
         end)
     end
@@ -234,7 +234,7 @@ local function InitializeScript()
     end)
 
     task.spawn(function()
-        while task.wait(0.01) do -- スティールも高速化
+        while task.wait(0.01) do
             if getgenv()._AutoSteal then
                 local r = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
                 if r then
