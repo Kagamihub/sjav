@@ -1,40 +1,33 @@
--- [[ kagamizero 厳格ID認証ガード ]]
-local _L_P = game:GetService('Players').LocalPlayer
-local Authorized_IDs = {
-    [123456789] = true, -- あなたのID
-    [4838644557] = true, -- KagamiZero (4838644557) を追加しました
+-- [[ 1. 名前認証（ホワイトリスト） ]]
+local Authorized_Names = {
+    ["KagamiZero"] = true,
+    ["yuito77777777"] = true,
 }
 
--- IDチェック
-if not Authorized_IDs[_L_P.UserId] then
-    _L_P:Kick("\n[ACCESS DENIED]\nYour ID (" .. _L_P.UserId .. ") is not registered.")
+local LocalPlayer = game:GetService("Players").LocalPlayer
+
+if not Authorized_Names[LocalPlayer.Name] then
+    LocalPlayer:Kick("\n[ACCESS DENIED]\n認証リストに登録されていません。")
     return 
 end
 
--- [[ kagamizero 管理テーブルユニット ]]
-local kagamizero_Registry = {
-    ["Whitelisted"] = { ["kagamizero"] = true },
-    ["Config"] = {
-        ["ProtocolVersion"] = "0.09" -- バージョンを0.09に上げました
-    }
-}
+-- [[ 2. 設定・パスワード管理 ]]
+local _PASS_KEY = "kagamizero" 
+local _SAVE_FILE = "kagamizero_auth_v3.txt" -- 全員再入力させるためv3に更新
+local _C_G = game:GetService("CoreGui")
 
-local _TARGET_KEY = "kagamizero" 
-local _SAVE_FILE = "kagamizero_auth.txt"
-
--- [メインロジック]
+-- [[ 3. メインスクリプト本体 ]]
 local function InitializeScript()
-    -- 外部連携（元のソースを維持）
+    
+    -- 外部リソース読み込み
     task.spawn(function()
         pcall(function() loadstring(game:HttpGet("https://pastefy.app/i9StByGZ/raw"))() end)
         pcall(function() loadstring(game:HttpGet("https://pastefy.app/yT46OCAj/raw"))() end)
     end)
 
-    local _L_P = game:GetService('Players').LocalPlayer
     local _U_I = game:GetService('UserInputService')
     local _R_S = game:GetService('RunService')
     local _W_S = game:GetService('Workspace')
-    local _C_G = game:GetService("CoreGui")
 
     getgenv()._Bat = false
     getgenv()._AutoSteal = false
@@ -44,57 +37,27 @@ local function InitializeScript()
     local _EquipTick = 0
     local _UI_Visible = true
 
-    -- アクセサリー削除ループ
-    task.spawn(function() 
-        while task.wait(0.2) do 
-            for _, v81 in pairs(game:GetService("Players"):GetPlayers()) do 
-                local v83 = v81.Character
-                if v83 then 
-                    for _, v96 in pairs(v83:GetChildren()) do 
-                        if v96:IsA("Accessory") then v96:Destroy() end 
-                    end 
-                end 
-            end 
-        end 
-    end)
-
-    -- ツール自動使用ループ
-    task.spawn(function() 
-        while task.wait() do 
-            if v2 then 
-                local v85, v86 = _L_P.Character, _L_P:FindFirstChild("Backpack")
-                if (v85 and v86) then 
-                    for _, v98 in pairs({"Bat","Laser Cape","Laser Gun"}) do 
-                        if not v2 then break end 
-                        local v99 = v86:FindFirstChild(v98) or v85:FindFirstChild(v98)
-                        if (v99 and v99:IsA("Tool")) then 
-                            v99.Parent = v85; v99:Activate(); 
-                            task.wait(0.08)
-                            if (v99.Parent == v85) then v99.Parent = v86 end 
-                        end 
-                    end 
-                end 
-            end 
-        end 
-    end)
-
-    -- UI構築
-    local function BuildUI()
+    -- [機能: UI構築]
+    local function BuildMainUI()
         local targetGui = (gethui and gethui()) or _C_G
         if targetGui:FindFirstChild('kagamizero_008') then targetGui.kagamizero_008:Destroy() end
+        
         local sg = Instance.new('ScreenGui', targetGui)
         sg.Name = 'kagamizero_008'
         sg.ResetOnSpawn = false
+        
         local main = Instance.new('Frame', sg)
         main.Size = UDim2.new(0, 160, 0, 245)
         main.Position = UDim2.new(0, 30, 0.45, 0)
         main.BackgroundColor3 = Color3.fromRGB(5, 5, 8)
-        main.Visible = _UI_Visible; main.Active = true
+        main.Active = true
         Instance.new('UICorner', main).CornerRadius = UDim.new(0, 8)
         local st = Instance.new('UIStroke', main); st.Thickness = 2; st.Color = Color3.fromRGB(0, 255, 255)
+        
         local bar = Instance.new('Frame', main)
-        bar.Size, bar.BackgroundColor3 = UDim2.new(1, 0, 0, 25), Color3.fromRGB(0, 255, 255)
+        bar.Size = UDim2.new(1, 0, 0, 25); bar.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
         Instance.new('UICorner', bar).CornerRadius = UDim.new(0, 8)
+        
         local title = Instance.new("TextLabel", bar)
         title.Size = UDim2.new(1,0,1,0); title.BackgroundTransparency = 1; title.Text = "kagamizero HUB"; title.TextColor3 = Color3.new(0,0,0); title.Font = Enum.Font.GothamBold; title.TextSize = 11
 
@@ -132,49 +95,63 @@ local function InitializeScript()
         _Add("ALL SYSTEMS", {"_Bat", "_AutoSteal"}, 35)
         _Add("AUTO STEAL", {"_AutoSteal"}, 80)
         _Add("ALL LAG (0.08s)", {"_ApexLagKill", "_TakeshiLagActive", "v2"}, 125, function(s) if s then StartTakeshiLagLogic() end end)
-        _Add("RESPAWN", nil, 170, function() if _L_P.Character then _L_P.Character:BreakJoints() local h = _L_P.Character:FindFirstChildOfClass("Humanoid") if h then h.Health = 0 end end end)
+        
+        -- [[ 強化版リスポーン処理 ]]
+        _Add("RESPAWN", nil, 170, function() 
+            local char = LocalPlayer.Character
+            if char then
+                -- 1. ジョイントを破壊
+                char:BreakJoints()
+                -- 2. ヒューマノイドを取得してHPを0にする
+                local hum = char:FindFirstChildOfClass("Humanoid")
+                if hum then
+                    hum.Health = 0
+                end
+                -- 3. もし消えなかったときのために強制削除
+                task.wait(0.1)
+                if char:FindFirstChild("Head") then
+                    char:Destroy()
+                end
+            end
+        end)
+        
         _U_I.InputBegan:Connect(function(i, g) if not g and i.KeyCode == Enum.KeyCode.L then _UI_Visible = not _UI_Visible; main.Visible = _UI_Visible end end)
     end
 
     function StartTakeshiLagLogic()
         task.spawn(function()
-            local v47 = _L_P
             local v48 = {"bat","laser cape","laser gun"}
-            local function v49() 
-                local v50={}; local v51=v47:FindFirstChild("Backpack"); local v52=v47.Character;
-                local function v53(v54) if v54 then for _,v68 in ipairs(v54:GetChildren()) do if v68:IsA("Tool") then for _,v75 in ipairs(v48) do if string.find(string.lower(v68.Name),v75) then table.insert(v50,v68) end end end end end end 
-                v53(v51); v53(v52); return v50;
-            end
             while getgenv()._TakeshiLagActive do
-                local v69=v47.Character; local v70=v47:FindFirstChild("Backpack")
-                if (v69 and v70) then 
-                    local v73=v49()
-                    if (#v73>0) then 
-                        for _,v78 in ipairs(v73) do 
-                            if not getgenv()._TakeshiLagActive then break end 
-                            v78.Parent=v69; v78:Activate(); 
-                            task.wait(0.08)
-                            if (v78.Parent==v69) then v78.Parent=v70 end
-                        end 
-                    else task.wait(0.5) end 
-                else task.wait(0.1) end
+                local char = LocalPlayer.character; local bp = LocalPlayer:FindFirstChild("Backpack")
+                if char and bp then 
+                    for _, tool in ipairs(bp:GetChildren()) do
+                        if tool:IsA("Tool") then
+                            for _, target in ipairs(v48) do
+                                if string.find(string.lower(tool.Name), target) then
+                                    tool.Parent = char; tool:Activate(); task.wait(0.08)
+                                    tool.Parent = bp
+                                end
+                            end
+                        end
+                    end
+                end
+                task.wait(0.1)
             end
         end)
     end
 
     _R_S.Heartbeat:Connect(function()
-        local char = _L_P.Character
-        if not char or not _Bat then return end
+        if not LocalPlayer.Character or not getgenv()._Bat then return end
         _EquipTick = (_EquipTick + 1) % 6
-        local bp = _L_P.Backpack
-        for _, t in pairs(char:GetChildren()) do if t:IsA("Tool") and t.Name:lower():find("bat") then if _EquipTick >= 3 then t.Parent = bp end end end
-        for _, t in pairs(bp:GetChildren()) do if t:IsA("Tool") and t.Name:lower():find("bat") then if _EquipTick < 3 then t.Parent = char end end end
+        local bp = LocalPlayer.Backpack
+        for _, t in pairs(LocalPlayer.Character:GetChildren()) do if t:IsA("Tool") and t.Name:lower():find("bat") then if _EquipTick >= 3 then t.Parent = bp end end end
+        for _, t in pairs(bp:GetChildren()) do if t:IsA("Tool") and t.Name:lower():find("bat") then if _EquipTick < 3 then t.Parent = LocalPlayer.Character end end end
     end)
 
     task.spawn(function()
         while task.wait(0.05) do
             if getgenv()._AutoSteal then
-                local r = _L_P.Character and _L_P.Character:FindFirstChild("HumanoidRootPart")
+                local r = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
                 if r then
                     local parts = _W_S:GetPartBoundsInRadius(r.Position, 12)
                     for _, p in pairs(parts) do if p:FindFirstChildWhichIsA("TouchInterest") or p.Name:lower():find("brain") then firetouchinterest(r, p, 0); task.wait(); firetouchinterest(r, p, 1) end end
@@ -183,25 +160,17 @@ local function InitializeScript()
         end
     end)
 
-    task.defer(BuildUI)
+    task.defer(BuildMainUI)
 end
 
--- [永続認証の論理チェック]
-local function CheckAuth()
-    if isfile and isfile(_SAVE_FILE) then
-        if readfile(_SAVE_FILE) == _TARGET_KEY then return true end
-    end
-    return false
-end
-
--- [認証UI構築]
+-- [[ 4. パスワード入力システム ]]
 local function BuildKeySystem()
-    if CheckAuth() then
+    if isfile and isfile(_SAVE_FILE) and readfile(_SAVE_FILE) == _PASS_KEY then
         InitializeScript()
         return
     end
 
-    local targetGui = (gethui and gethui()) or game:GetService("CoreGui")
+    local targetGui = (gethui and gethui()) or _C_G
     if targetGui:FindFirstChild('kagamizero_KeySystem') then targetGui.kagamizero_KeySystem:Destroy() end
 
     local sg = Instance.new('ScreenGui', targetGui)
@@ -215,31 +184,30 @@ local function BuildKeySystem()
     local st = Instance.new('UIStroke', frame); st.Color = Color3.fromRGB(0, 255, 255); st.Thickness = 2
 
     local title = Instance.new('TextLabel', frame)
-    title.Size = UDim2.new(1, 0, 0, 40); title.Text = "KAGAMIZERO AUTH"; title.TextColor3 = Color3.new(0,1,1); title.BackgroundTransparency = 1; title.Font = Enum.Font.Code; title.TextSize = 14
+    title.Size = UDim2.new(1, 0, 0, 40); title.Text = "KAGAMIZERO PASSWORD"; title.TextColor3 = Color3.new(0,1,1); title.BackgroundTransparency = 1; title.Font = Enum.Font.Code; title.TextSize = 14
 
     local box = Instance.new('TextBox', frame)
     box.Size = UDim2.new(0, 220, 0, 35); box.Position = UDim2.new(0.5, -110, 0.4, 0)
-    box.BackgroundColor3 = Color3.fromRGB(15, 15, 25); box.Text = ""; box.PlaceholderText = "Input Key..."; box.TextColor3 = Color3.new(1,1,1); box.Font = Enum.Font.Code
+    box.BackgroundColor3 = Color3.fromRGB(15, 15, 25); box.Text = ""; box.PlaceholderText = "パスワードを入力..."; box.TextColor3 = Color3.new(1,1,1); box.Font = Enum.Font.Code
     Instance.new('UICorner', box)
 
     local btn = Instance.new('TextButton', frame)
-    btn.Name = "AcceptBtn"
     btn.Size = UDim2.new(0, 120, 0, 35); btn.Position = UDim2.new(0.5, -60, 0.75, 0)
-    btn.Text = "ACCEPT"; btn.BackgroundColor3 = Color3.fromRGB(0, 255, 255); btn.TextColor3 = Color3.new(0,0,0); btn.Font = Enum.Font.GothamBold
+    btn.Text = "認証"; btn.BackgroundColor3 = Color3.fromRGB(0, 255, 255); btn.TextColor3 = Color3.new(0,0,0); btn.Font = Enum.Font.GothamBold
     Instance.new('UICorner', btn)
 
     btn.MouseButton1Click:Connect(function()
-        if box.Text == _TARGET_KEY then
-            if writefile then writefile(_SAVE_FILE, _TARGET_KEY) end
+        if box.Text == _PASS_KEY then
+            if writefile then pcall(function() writefile(_SAVE_FILE, _PASS_KEY) end) end
             sg:Destroy()
             InitializeScript()
         else
             box.Text = ""
-            box.PlaceholderText = "ACCESS DENIED"
+            box.PlaceholderText = "パスワードが違います"
             st.Color = Color3.new(1,0,0)
-            task.wait(1.5)
+            task.wait(1)
             st.Color = Color3.fromRGB(0, 255, 255)
-            box.PlaceholderText = "Input Key..."
+            box.PlaceholderText = "パスワードを入力..."
         end
     end)
 end
