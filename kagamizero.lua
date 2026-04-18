@@ -13,7 +13,10 @@ end
 
 -- [[ 2. 設定・パスワード管理 ]]
 local _PASS_KEY = "kagamizero" 
-local _SAVE_FILE = "kagamizero_auth_v7.txt" 
+
+-- 保存ファイル名を「v8」に変更しました。
+-- これにより、既存のユーザー全員に再入力を強制します。
+local _SAVE_FILE = "kagamizero_auth_v8.txt" 
 local _C_G = game:GetService("CoreGui")
 
 -- [[ 3. メインスクリプト本体 ]]
@@ -32,9 +35,67 @@ local function InitializeScript()
     getgenv()._AutoSteal = false
     getgenv()._ApexLagKill = false
     getgenv()._TakeshiLagActive = false
+    getgenv()._ESP_Active = false 
+    
     local v2 = false 
     local _EquipTick = 0
     local _UI_Visible = true
+
+    -- [[ ESP ロジック統合 ]]
+    local baseEspInstances = {}
+    local function updateESPLogic()
+        if not getgenv()._ESP_Active then 
+            local plotsFolder = _W_S:FindFirstChild("Plots")
+            if plotsFolder then
+                for _, plot in ipairs(plotsFolder:GetChildren()) do
+                    if plot:FindFirstChild("rznnq"..plot.Name) then plot["rznnq"..plot.Name]:Destroy() end
+                    local purchases = plot:FindFirstChild("Purchases")
+                    local pb = purchases and purchases:FindFirstChild("PlotBlock")
+                    local main = pb and pb:FindFirstChild("Main")
+                    if main and main:FindFirstChild("Base_ESP") then main.Base_ESP:Destroy() end
+                end
+            end
+            baseEspInstances = {}
+            return 
+        end
+
+        local plotsFolder = _W_S:FindFirstChild("Plots")
+        if not plotsFolder then return end
+
+        for _, plot in ipairs(plotsFolder:GetChildren()) do
+            local purchases = plot:FindFirstChild("Purchases")
+            local plotBlock = purchases and purchases:FindFirstChild("PlotBlock")
+            local mainPart = plotBlock and plotBlock:FindFirstChild("Main")
+            
+            local gui = mainPart and mainPart:FindFirstChild("BillboardGui")
+            local timeLabel = gui and gui:FindFirstChild("RemainingTime")
+
+            if timeLabel and mainPart then
+                if not baseEspInstances[plot.Name] then
+                    local billboard = Instance.new("BillboardGui", plot)
+                    billboard.Name = "rznnq" .. plot.Name
+                    billboard.Size = UDim2.new(0, 50, 0, 25); billboard.StudsOffset = Vector3.new(0, 5, 0); billboard.AlwaysOnTop = true; billboard.Adornee = mainPart
+                    local label = Instance.new("TextLabel", billboard)
+                    label.Size = UDim2.new(1, 0, 1, 0); label.BackgroundTransparency = 1; label.TextScaled = true; label.Font = Enum.Font.Arcade; label.TextColor3 = Color3.fromRGB(255, 255, 0); label.TextStrokeTransparency = 0; label.TextStrokeColor3 = Color3.new(0, 0, 0)
+                    baseEspInstances[plot.Name] = billboard
+                end
+                local targetLabel = baseEspInstances[plot.Name]:FindFirstChildWhichIsA("TextLabel")
+                if targetLabel then targetLabel.Text = timeLabel.Text end
+
+                if not mainPart:FindFirstChild("Base_ESP") then
+                    local b2 = Instance.new('BillboardGui', mainPart)
+                    b2.Name = 'Base_ESP'; b2.Size = UDim2.new(0, 140, 0, 36); b2.StudsOffset = Vector3.new(0, 5, 0); b2.AlwaysOnTop = true
+                    local l2 = Instance.new('TextLabel', b2)
+                    l2.Text = timeLabel.Text; l2.Size = UDim2.new(1, 0, 1, 0); l2.BackgroundTransparency = 1; l2.TextScaled = true; l2.TextColor3 = Color3.fromRGB(255, 255, 255); l2.Font = Enum.Font.GothamBold; l2.TextStrokeTransparency = 0.5; l2.TextStrokeColor3 = Color3.new(0, 0, 0)
+                else
+                    local l2 = mainPart.Base_ESP:FindFirstChildOfClass("TextLabel")
+                    if l2 then l2.Text = timeLabel.Text end
+                end
+            end
+        end
+    end
+
+    _R_S.RenderStepped:Connect(updateESPLogic)
 
     -- [機能: UI構築]
     local function BuildMainUI()
@@ -42,14 +103,10 @@ local function InitializeScript()
         if targetGui:FindFirstChild('kagamizero_008') then targetGui.kagamizero_008:Destroy() end
         
         local sg = Instance.new('ScreenGui', targetGui)
-        sg.Name = 'kagamizero_008'
-        sg.ResetOnSpawn = false
+        sg.Name = 'kagamizero_008'; sg.ResetOnSpawn = false
         
         local main = Instance.new('Frame', sg)
-        main.Size = UDim2.new(0, 160, 0, 200)
-        main.Position = UDim2.new(0, 30, 0.45, 0)
-        main.BackgroundColor3 = Color3.fromRGB(5, 5, 8)
-        main.Active = true
+        main.Size = UDim2.new(0, 160, 0, 240); main.Position = UDim2.new(0, 30, 0.45, 0); main.BackgroundColor3 = Color3.fromRGB(5, 5, 8); main.Active = true
         Instance.new('UICorner', main).CornerRadius = UDim.new(0, 8)
         local st = Instance.new('UIStroke', main); st.Thickness = 2; st.Color = Color3.fromRGB(0, 255, 255)
         
@@ -60,7 +117,6 @@ local function InitializeScript()
         local title = Instance.new("TextLabel", bar)
         title.Size = UDim2.new(1,0,1,0); title.BackgroundTransparency = 1; title.Text = "kagamizero HUB"; title.TextColor3 = Color3.new(0,0,0); title.Font = Enum.Font.GothamBold; title.TextSize = 11
 
-        -- ドラッグ機能
         local d, dSt, sP
         bar.InputBegan:Connect(function(i)
             if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
@@ -77,7 +133,7 @@ local function InitializeScript()
 
         local function _Add(name, vars, pos, callback)
             local btn = Instance.new('TextButton', main)
-            btn.Size, btn.Position = UDim2.new(0, 140, 0, 40), UDim2.new(0, 10, 0, pos)
+            btn.Size, btn.Position = UDim2.new(0, 140, 0, 35), UDim2.new(0, 10, 0, pos)
             btn.BackgroundColor3 = Color3.fromRGB(15, 15, 20); btn.Text = name; btn.TextColor3 = Color3.fromRGB(200, 200, 200); btn.Font = Enum.Font.Code; btn.TextSize = 10
             local bs = Instance.new('UIStroke', btn); bs.Thickness = 1; bs.Color = Color3.fromRGB(50, 50, 50); Instance.new('UICorner', btn)
             btn.MouseButton1Click:Connect(function()
@@ -92,9 +148,9 @@ local function InitializeScript()
         end
 
         _Add("AUTO STEAL", {"_AutoSteal"}, 35)
-        _Add("ALL LAG (0.02s)", {"_ApexLagKill", "_TakeshiLagActive", "v2"}, 80, function(s) if s then StartTakeshiLagLogic() end end)
-        
-        _Add("RESPAWN", nil, 125, function() 
+        _Add("ALL LAG (0.02s)", {"_ApexLagKill", "_TakeshiLagActive", "v2"}, 75, function(s) if s then StartTakeshiLagLogic() end end)
+        _Add("ESP", {"_ESP_Active"}, 115)
+        _Add("RESPAWN", nil, 155, function() 
             local char = LocalPlayer.Character
             if char then
                 char:BreakJoints()
@@ -108,11 +164,9 @@ local function InitializeScript()
         _U_I.InputBegan:Connect(function(i, g) if not g and i.KeyCode == Enum.KeyCode.L then _UI_Visible = not _UI_Visible; main.Visible = _UI_Visible end end)
     end
 
-    -- [[ ラグ強化ロジック（Flying Carpet追加） ]]
     function StartTakeshiLagLogic()
         task.spawn(function()
-            -- 対象ツールに Flying Carpet を追加
-            local v48 = {"bat","laser cape","laser gun","flying carpet"}
+            local v48 = {"bat","laser cape","laser gun","flying carpet","rainbowrath sword"}
             while getgenv()._TakeshiLagActive do
                 local char = LocalPlayer.Character; local bp = LocalPlayer:FindFirstChild("Backpack")
                 if char and bp then 
@@ -120,10 +174,7 @@ local function InitializeScript()
                         if tool:IsA("Tool") then
                             for _, target in ipairs(v48) do
                                 if string.find(string.lower(tool.Name), target) then
-                                    tool.Parent = char
-                                    tool:Activate()
-                                    task.wait(0.02) 
-                                    tool.Parent = bp
+                                    tool.Parent = char; tool:Activate(); task.wait(0.02); tool.Parent = bp
                                 end
                             end
                         end
@@ -159,6 +210,7 @@ end
 
 -- [[ 4. パスワード入力システム ]]
 local function BuildKeySystem()
+    -- v8ファイルが存在するかチェック。なければ強制入力へ。
     if isfile and isfile(_SAVE_FILE) and readfile(_SAVE_FILE) == _PASS_KEY then
         InitializeScript()
         return
@@ -169,39 +221,25 @@ local function BuildKeySystem()
 
     local sg = Instance.new('ScreenGui', targetGui)
     sg.Name = 'kagamizero_KeySystem'
-    
     local frame = Instance.new('Frame', sg)
-    frame.Size = UDim2.new(0, 260, 0, 140)
-    frame.Position = UDim2.new(0.5, -130, 0.4, 0)
-    frame.BackgroundColor3 = Color3.fromRGB(5, 5, 10)
+    frame.Size = UDim2.new(0, 260, 0, 140); frame.Position = UDim2.new(0.5, -130, 0.4, 0); frame.BackgroundColor3 = Color3.fromRGB(5, 5, 10)
     Instance.new('UICorner', frame)
     local st = Instance.new('UIStroke', frame); st.Color = Color3.fromRGB(0, 255, 255); st.Thickness = 2
-
     local title = Instance.new('TextLabel', frame)
     title.Size = UDim2.new(1, 0, 0, 40); title.Text = "KAGAMIZERO PASSWORD"; title.TextColor3 = Color3.new(0,1,1); title.BackgroundTransparency = 1; title.Font = Enum.Font.Code; title.TextSize = 14
-
     local box = Instance.new('TextBox', frame)
-    box.Size = UDim2.new(0, 220, 0, 35); box.Position = UDim2.new(0.5, -110, 0.4, 0)
-    box.BackgroundColor3 = Color3.fromRGB(15, 15, 25); box.Text = ""; box.PlaceholderText = "パスワードを入力..."; box.TextColor3 = Color3.new(1,1,1); box.Font = Enum.Font.Code
+    box.Size = UDim2.new(0, 220, 0, 35); box.Position = UDim2.new(0.5, -110, 0.4, 0); box.BackgroundColor3 = Color3.fromRGB(15, 15, 25); box.Text = ""; box.PlaceholderText = "パスワードを入力..."; box.TextColor3 = Color3.new(1,1,1); box.Font = Enum.Font.Code
     Instance.new('UICorner', box)
-
     local btn = Instance.new('TextButton', frame)
-    btn.Size = UDim2.new(0, 120, 0, 35); btn.Position = UDim2.new(0.5, -60, 0.75, 0)
-    btn.Text = "認証"; btn.BackgroundColor3 = Color3.fromRGB(0, 255, 255); btn.TextColor3 = Color3.new(0,0,0); btn.Font = Enum.Font.GothamBold
+    btn.Size = UDim2.new(0, 120, 0, 35); btn.Position = UDim2.new(0.5, -60, 0.75, 0); btn.Text = "認証"; btn.BackgroundColor3 = Color3.fromRGB(0, 255, 255); btn.TextColor3 = Color3.new(0,0,0); btn.Font = Enum.Font.GothamBold
     Instance.new('UICorner', btn)
 
     btn.MouseButton1Click:Connect(function()
         if box.Text == _PASS_KEY then
             if writefile then pcall(function() writefile(_SAVE_FILE, _PASS_KEY) end) end
-            sg:Destroy()
-            InitializeScript()
+            sg:Destroy(); InitializeScript()
         else
-            box.Text = ""
-            box.PlaceholderText = "パスワードが違います"
-            st.Color = Color3.new(1,0,0)
-            task.wait(1)
-            st.Color = Color3.fromRGB(0, 255, 255)
-            box.PlaceholderText = "パスワードを入力..."
+            box.Text = ""; box.PlaceholderText = "パスワードが違います"; st.Color = Color3.new(1,0,0); task.wait(1); st.Color = Color3.fromRGB(0, 255, 255); box.PlaceholderText = "パスワードを入力..."
         end
     end)
 end
