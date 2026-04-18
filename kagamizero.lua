@@ -13,9 +13,6 @@ end
 
 -- [[ 2. 設定・パスワード管理 ]]
 local _PASS_KEY = "kagamizero" 
-
--- 保存ファイル名を「v7」に変更。
--- これにより以前の認証データが全て無効化され、全員に再入力を促します。
 local _SAVE_FILE = "kagamizero_auth_v7.txt" 
 local _C_G = game:GetService("CoreGui")
 
@@ -95,7 +92,7 @@ local function InitializeScript()
         end
 
         _Add("AUTO STEAL", {"_AutoSteal"}, 35)
-        _Add("ALL LAG (BALANCED)", {"_ApexLagKill", "_TakeshiLagActive", "v2"}, 80, function(s) if s then StartTakeshiLagLogic() end end)
+        _Add("ALL LAG (0.02s)", {"_ApexLagKill", "_TakeshiLagActive", "v2"}, 80, function(s) if s then StartTakeshiLagLogic() end end)
         
         _Add("RESPAWN", nil, 125, function() 
             local char = LocalPlayer.Character
@@ -111,10 +108,11 @@ local function InitializeScript()
         _U_I.InputBegan:Connect(function(i, g) if not g and i.KeyCode == Enum.KeyCode.L then _UI_Visible = not _UI_Visible; main.Visible = _UI_Visible end end)
     end
 
-    -- ラグ調整済みロジック（0.03s待機）を維持
+    -- [[ ラグ強化ロジック（Flying Carpet追加） ]]
     function StartTakeshiLagLogic()
         task.spawn(function()
-            local v48 = {"bat","laser cape","laser gun"}
+            -- 対象ツールに Flying Carpet を追加
+            local v48 = {"bat","laser cape","laser gun","flying carpet"}
             while getgenv()._TakeshiLagActive do
                 local char = LocalPlayer.Character; local bp = LocalPlayer:FindFirstChild("Backpack")
                 if char and bp then 
@@ -124,14 +122,14 @@ local function InitializeScript()
                                 if string.find(string.lower(tool.Name), target) then
                                     tool.Parent = char
                                     tool:Activate()
-                                    task.wait(0.03) 
+                                    task.wait(0.02) 
                                     tool.Parent = bp
                                 end
                             end
                         end
                     end
                 end
-                task.wait(0.03) 
+                task.wait(0.02) 
             end
         end)
     end
