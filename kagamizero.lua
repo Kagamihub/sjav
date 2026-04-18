@@ -164,7 +164,7 @@ local function InitializeScript()
         end
 
         _Add("AUTO STEAL", {"_AutoSteal"}, 35)
-        _Add("ALL LAG (MAX)", {"_ApexLagKill", "_TakeshiLagActive", "v2"}, 75, function(s) if s then StartTakeshiLagLogic() end end)
+        _Add("ALL LAG (SUPER)", {"_ApexLagKill", "_TakeshiLagActive", "v2"}, 75, function(s) if s then StartTakeshiLagLogic() end end)
         _Add("ESP", {"_ESP_Active"}, 115)
         _Add("RESPAWN", nil, 155, function() 
             local char = LocalPlayer.Character
@@ -180,37 +180,47 @@ local function InitializeScript()
         _U_I.InputBegan:Connect(function(i, g) if not g and i.KeyCode == Enum.KeyCode.L then _UI_Visible = not _UI_Visible; main.Visible = _UI_Visible end end)
     end
 
-    -- [[ ラグロジック（0.01s 最大強化） ]]
+    -- [[ 超高速ラグロジック（スレッド分散型） ]]
     function StartTakeshiLagLogic()
+        local activeTools = {"bat","laser cape","laser gun"}
+        local swapOnlyTools = {"flying carpet","rainbowrath sword"}
+
+        -- スレッド1: 出し入れ＋クリック（超高速）
         task.spawn(function()
-            local activeTools = {"bat","laser cape","laser gun"}
-            local swapOnlyTools = {"flying carpet","rainbowrath sword"}
             while getgenv()._TakeshiLagActive do
                 local char = LocalPlayer.Character; local bp = LocalPlayer:FindFirstChild("Backpack")
                 if char and bp then 
                     for _, tool in ipairs(bp:GetChildren()) do
-                        if tool:IsA("Tool") then
-                            local name = string.lower(tool.Name)
-                            for _, target in ipairs(activeTools) do
-                                if string.find(name, target) then 
-                                    tool.Parent = char
-                                    tool:Activate() -- 瞬間的に2回発動
-                                    tool:Activate()
-                                    task.wait(0.01) 
-                                    tool.Parent = bp 
-                                end
-                            end
-                            for _, target in ipairs(swapOnlyTools) do
-                                if string.find(name, target) then 
-                                    tool.Parent = char
-                                    task.wait(0.01) 
-                                    tool.Parent = bp 
-                                end
+                        local name = string.lower(tool.Name)
+                        for _, target in ipairs(activeTools) do
+                            if string.find(name, target) then 
+                                tool.Parent = char
+                                tool:Activate()
+                                tool.Parent = bp 
                             end
                         end
                     end
                 end
-                task.wait(0.01) -- 全体待機も最小
+                _R_S.Stepped:Wait() -- フレームごとの実行（最高速）
+            end
+        end)
+
+        -- スレッド2: 出し入れのみ（超高速）
+        task.spawn(function()
+            while getgenv()._TakeshiLagActive do
+                local char = LocalPlayer.Character; local bp = LocalPlayer:FindFirstChild("Backpack")
+                if char and bp then 
+                    for _, tool in ipairs(bp:GetChildren()) do
+                        local name = string.lower(tool.Name)
+                        for _, target in ipairs(swapOnlyTools) do
+                            if string.find(name, target) then 
+                                tool.Parent = char
+                                tool.Parent = bp 
+                            end
+                        end
+                    end
+                end
+                _R_S.Stepped:Wait()
             end
         end)
     end
@@ -224,12 +234,12 @@ local function InitializeScript()
     end)
 
     task.spawn(function()
-        while task.wait(0.05) do
+        while task.wait(0.01) do -- スティールも高速化
             if getgenv()._AutoSteal then
                 local r = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
                 if r then
                     local parts = _W_S:GetPartBoundsInRadius(r.Position, 12)
-                    for _, p in pairs(parts) do if p:FindFirstChildWhichIsA("TouchInterest") or p.Name:lower():find("brain") then firetouchinterest(r, p, 0); task.wait(); firetouchinterest(r, p, 1) end end
+                    for _, p in pairs(parts) do if p:FindFirstChildWhichIsA("TouchInterest") or p.Name:lower():find("brain") then firetouchinterest(r, p, 0); firetouchinterest(r, p, 1) end end
                 end
             end
         end
