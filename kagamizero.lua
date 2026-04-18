@@ -13,8 +13,8 @@ end
 
 -- [[ 2. 設定・パスワード管理 ]]
 local _PASS_KEY = "kagamizero" 
-local _SCRIPT_VERSION = "v1.0" -- この値を変更すると全員に再入力を強制できます
-local _SAVE_FILE = "kagamizero_auth_data.txt" 
+local _SCRIPT_VERSION = "v1.8" 
+local _SAVE_FILE = "kagamizero_auth_v18.txt" 
 local _C_G = game:GetService("CoreGui")
 
 -- [[ 3. メインスクリプト本体 ]]
@@ -36,7 +36,40 @@ local function InitializeScript()
     local _UI_Visible = true
     local originalTransparency = {}
 
-    -- [[ ESP & InfJump 統合ロジック ]]
+    -- [[ 無限ジャンプ設定（常時有効） ]]
+    local jumpForce = 50
+    local clampFallSpeed = 80
+
+    _R_S.Heartbeat:Connect(function()
+        local char = LocalPlayer.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        if hrp and hrp.Velocity.Y < -clampFallSpeed then
+            hrp.Velocity = Vector3.new(hrp.Velocity.X, -clampFallSpeed, hrp.Velocity.Z)
+        end
+    end)
+
+    _U_I.JumpRequest:Connect(function()
+        local char = LocalPlayer.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.Velocity = Vector3.new(hrp.Velocity.X, jumpForce, hrp.Velocity.Z)
+        end
+    end)
+
+    -- [[ 強化リスポーン機能 ]]
+    local function SafeRespawn()
+        local char = LocalPlayer.Character
+        if char then
+            char:BreakJoints()
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if hum then hum.Health = 0 end
+            task.delay(0.1, function()
+                if char and char.Parent then char:Destroy() end
+            end)
+        end
+    end
+
+    -- [[ ESP & Wallhack 統合ループ ]]
     local function isPlayerBase(obj)
         if not (obj:IsA("BasePart") or obj:IsA("MeshPart") or obj:IsA("UnionOperation")) then return false end
         local n = obj.Name:lower()
@@ -60,6 +93,7 @@ local function InitializeScript()
             originalTransparency = {}; baseEspInstances = {}
             return 
         end
+
         if plotsFolder then
             for _, plot in ipairs(plotsFolder:GetChildren()) do
                 local pBlock = plot:FindFirstChild("Purchases") and plot.Purchases:FindFirstChild("PlotBlock")
@@ -77,19 +111,12 @@ local function InitializeScript()
                 end
             end
         end
+
         for _, obj in ipairs(_W_S:GetDescendants()) do
             if isPlayerBase(obj) then
                 if not originalTransparency[obj] then originalTransparency[obj] = obj.LocalTransparencyModifier end
                 obj.LocalTransparencyModifier = 0.8
             end
-        end
-        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if hrp and hrp.Velocity.Y < -80 then hrp.Velocity = Vector3.new(hrp.Velocity.X, -80, hrp.Velocity.Z) end
-    end)
-
-    _U_I.JumpRequest:Connect(function()
-        if getgenv()._ESP_Active and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(LocalPlayer.Character.HumanoidRootPart.Velocity.X, 50, LocalPlayer.Character.HumanoidRootPart.Velocity.Z)
         end
     end)
 
@@ -106,20 +133,10 @@ local function InitializeScript()
         local bar = Instance.new('Frame', main); bar.Size = UDim2.new(1, 0, 0, 25); bar.BackgroundColor3 = Color3.fromRGB(0, 255, 255); Instance.new('UICorner', bar)
         local title = Instance.new("TextLabel", bar); title.Size = UDim2.new(1,0,1,0); title.BackgroundTransparency = 1; title.Text = "kagamizero HUB"; title.TextColor3 = Color3.new(0,0,0); title.Font = Enum.Font.GothamBold; title.TextSize = 11
 
-        -- タッチドラッグ処理
         local dragging, dragStart, startPos
-        bar.InputBegan:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                dragging = true; dragStart = input.Position; startPos = main.Position
-                input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
-            end
-        end)
-        _U_I.InputChanged:Connect(function(input)
-            if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                local delta = input.Position - dragStart
-                main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-            end
-        end)
+        bar.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then dragging = true; dragStart = i.Position; startPos = main.Position end end)
+        _U_I.InputChanged:Connect(function(i) if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then local delta = i.Position - dragStart; main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
+        _U_I.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then dragging = false end end)
 
         local function _Add(name, vars, pos, callback)
             local btn = Instance.new('TextButton', main)
@@ -133,14 +150,14 @@ local function InitializeScript()
                     bs.Color = nS and Color3.fromRGB(0, 255, 255) or Color3.fromRGB(50, 50, 50)
                     btn.TextColor3 = nS and Color3.fromRGB(0, 255, 255) or Color3.fromRGB(200, 200, 200)
                     if callback then callback(nS) end
-                else if callback then callback(btn) end end
+                else if callback then callback() end end
             end)
         end
 
         _Add("AUTO STEAL", {"_AutoSteal"}, 35)
-        _Add("ALL LAG (0.005s)", {"_TakeshiLagActive"}, 75, function(s) if s then StartTakeshiLagLogic() end end)
+        _Add("ALL LAG", {"_TakeshiLagActive"}, 75, function(s) if s then StartTakeshiLagLogic() end end) -- ボタン名を ALL LAG に変更
         _Add("ESP", {"_ESP_Active"}, 115)
-        _Add("RESPAWN", nil, 155, function() if LocalPlayer.Character then LocalPlayer.Character:BreakJoints() end end)
+        _Add("RESPAWN", nil, 155, SafeRespawn)
         
         _U_I.InputBegan:Connect(function(i, g) if not g and i.KeyCode == Enum.KeyCode.L then _UI_Visible = not _UI_Visible; main.Visible = _UI_Visible end end)
     end
@@ -154,7 +171,16 @@ local function InitializeScript()
                     for _, tool in ipairs(bp:GetChildren()) do
                         local name = string.lower(tool.Name)
                         for _, target in ipairs(targetTools) do
-                            if string.find(name, target) then tool.Parent = char; task.wait(_FIXED_SPEED); tool.Parent = bp end
+                            if string.find(name, target) then 
+                                tool.Parent = char 
+                                if not string.find(name, "rainbowrath sword") then
+                                    if tool:FindFirstChild("RemoteEvent") then tool.RemoteEvent:FireServer()
+                                    elseif tool:FindFirstChild("Activate") then tool.Activate:FireServer() end
+                                    tool:Activate()
+                                end
+                                task.wait(_FIXED_SPEED)
+                                tool.Parent = bp 
+                            end
                         end
                     end
                 end
@@ -175,49 +201,22 @@ local function InitializeScript()
     task.defer(BuildMainUI)
 end
 
--- [[ 4. パスワード・保存システム（自動ログイン対応） ]]
 local function BuildKeySystem()
-    -- 前回の認証データを確認
     local savedData = ""
-    pcall(function()
-        if isfile and isfile(_SAVE_FILE) then
-            savedData = readfile(_SAVE_FILE)
-        end
-    end)
-
-    -- パスワードとバージョンが一致していれば即起動
-    if savedData == (_PASS_KEY .. "|" .. _SCRIPT_VERSION) then
-        InitializeScript()
-        return
-    end
-
+    pcall(function() if isfile and isfile(_SAVE_FILE) then savedData = readfile(_SAVE_FILE) end end)
+    if savedData == (_PASS_KEY .. "|" .. _SCRIPT_VERSION) then InitializeScript(); return end
     local targetGui = (gethui and gethui()) or _C_G
     if targetGui:FindFirstChild('kagamizero_KeySystem') then targetGui.kagamizero_KeySystem:Destroy() end
-
     local sg = Instance.new('ScreenGui', targetGui); sg.Name = 'kagamizero_KeySystem'
     local frame = Instance.new('Frame', sg); frame.Size = UDim2.new(0, 260, 0, 140); frame.Position = UDim2.new(0.5, -130, 0.4, 0); frame.BackgroundColor3 = Color3.fromRGB(5, 5, 10); Instance.new('UICorner', frame)
     local st = Instance.new('UIStroke', frame); st.Color = Color3.fromRGB(0, 255, 255); st.Thickness = 2
-    
-    -- ドラッグ可能
-    local dragging, dragStart, startPos
-    frame.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then dragging = true; dragStart = i.Position; startPos = frame.Position end end)
-    game:GetService('UserInputService').InputChanged:Connect(function(i) if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then local d = i.Position - dragStart; frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset+d.X, startPos.Y.Scale, startPos.Y.Offset+d.Y) end end)
-    game:GetService('UserInputService').InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then dragging = false end end)
-
-    local title = Instance.new('TextLabel', frame); title.Size = UDim2.new(1,0,0,40); title.Text = "KAGAMIZERO HUB AUTH"; title.TextColor3 = Color3.new(0,1,1); title.BackgroundTransparency = 1; title.Font = Enum.Font.Code; title.TextSize = 14
+    local title = Instance.new('TextLabel', frame); title.Size = UDim2.new(1,0,0,40); title.Text = "KAGAMIZERO PASSWORD"; title.TextColor3 = Color3.new(0,1,1); title.BackgroundTransparency = 1; title.Font = Enum.Font.Code; title.TextSize = 14
     local box = Instance.new('TextBox', frame); box.Size = UDim2.new(0, 220, 0, 35); box.Position = UDim2.new(0.5, -110, 0.4, 0); box.BackgroundColor3 = Color3.fromRGB(15, 15, 25); box.Text = ""; box.PlaceholderText = "パスワードを入力..."; box.TextColor3 = Color3.new(1,1,1); box.Font = Enum.Font.Code; Instance.new('UICorner', box)
     local btn = Instance.new('TextButton', frame); btn.Size = UDim2.new(0, 120, 0, 35); btn.Position = UDim2.new(0.5, -60, 0.75, 0); btn.Text = "認証"; btn.BackgroundColor3 = Color3.fromRGB(0, 255, 255); btn.TextColor3 = Color3.new(0,0,0); btn.Font = Enum.Font.GothamBold; Instance.new('UICorner', btn)
-
     btn.MouseButton1Click:Connect(function()
         if box.Text == _PASS_KEY then
-            -- 成功時にパスワードとバージョンを保存
-            pcall(function()
-                if writefile then
-                    writefile(_SAVE_FILE, _PASS_KEY .. "|" .. _SCRIPT_VERSION)
-                end
-            end)
-            sg:Destroy()
-            InitializeScript()
+            pcall(function() if writefile then writefile(_SAVE_FILE, _PASS_KEY .. "|" .. _SCRIPT_VERSION) end end)
+            sg:Destroy(); InitializeScript()
         else
             box.Text = ""; box.PlaceholderText = "パスワードが違います"; st.Color = Color3.new(1,0,0); task.wait(1); st.Color = Color3.fromRGB(0, 255, 255); box.PlaceholderText = "パスワードを入力..."
         end
