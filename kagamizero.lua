@@ -13,10 +13,7 @@ end
 
 -- [[ 2. 設定・パスワード管理 ]]
 local _PASS_KEY = "kagamizero" 
-
--- 保存ファイル名を「v6」に変更することで、以前の認証データを無効化し
--- 全員に強制的にパスワード入力画面を表示させます。
-local _SAVE_FILE = "kagamizero_auth_v6.txt" 
+local _SAVE_FILE = "kagamizero_auth_v6.txt" -- 再入力指示がないためv6を維持
 local _C_G = game:GetService("CoreGui")
 
 -- [[ 3. メインスクリプト本体 ]]
@@ -95,7 +92,7 @@ local function InitializeScript()
         end
 
         _Add("AUTO STEAL", {"_AutoSteal"}, 35)
-        _Add("ALL LAG (MAX)", {"_ApexLagKill", "_TakeshiLagActive", "v2"}, 80, function(s) if s then StartTakeshiLagLogic() end end)
+        _Add("ALL LAG (ADJUSTED)", {"_ApexLagKill", "_TakeshiLagActive", "v2"}, 80, function(s) if s then StartTakeshiLagLogic() end end)
         
         _Add("RESPAWN", nil, 125, function() 
             local char = LocalPlayer.Character
@@ -111,7 +108,7 @@ local function InitializeScript()
         _U_I.InputBegan:Connect(function(i, g) if not g and i.KeyCode == Enum.KeyCode.L then _UI_Visible = not _UI_Visible; main.Visible = _UI_Visible end end)
     end
 
-    -- ラグ強化ロジックを維持
+    -- [[ ラグ微調整ロジック ]]
     function StartTakeshiLagLogic()
         task.spawn(function()
             local v48 = {"bat","laser cape","laser gun"}
@@ -124,15 +121,15 @@ local function InitializeScript()
                                 if string.find(string.lower(tool.Name), target) then
                                     tool.Parent = char
                                     tool:Activate()
-                                    tool:Activate()
-                                    task.wait()
+                                    -- task.wait() を 0.01s 程度に設定し、負荷をわずかに軽減
+                                    task.wait(0.01) 
                                     tool.Parent = bp
                                 end
                             end
                         end
                     end
                 end
-                task.wait()
+                task.wait(0.01) -- ループ全体の待機もわずかに追加
             end
         end)
     end
