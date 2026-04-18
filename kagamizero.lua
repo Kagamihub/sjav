@@ -14,8 +14,7 @@ end
 -- [[ 2. 設定・パスワード管理 ]]
 local _PASS_KEY = "kagamizero" 
 
--- ファイル名を「v5」に変更。
--- これで以前の保存（v4以前）がすべて無効になり、全員に再入力を強制します。
+-- 前回の指示通り、全員に再入力を促すためv5を維持
 local _SAVE_FILE = "kagamizero_auth_v5.txt" 
 local _C_G = game:GetService("CoreGui")
 
@@ -49,7 +48,7 @@ local function InitializeScript()
         sg.ResetOnSpawn = false
         
         local main = Instance.new('Frame', sg)
-        main.Size = UDim2.new(0, 160, 0, 245)
+        main.Size = UDim2.new(0, 160, 0, 200) -- ボタンを減らしたので少し高さを調整
         main.Position = UDim2.new(0, 30, 0.45, 0)
         main.BackgroundColor3 = Color3.fromRGB(5, 5, 8)
         main.Active = true
@@ -94,12 +93,11 @@ local function InitializeScript()
             end)
         end
 
-        _Add("ALL SYSTEMS", {"_Bat", "_AutoSteal"}, 35)
-        _Add("AUTO STEAL", {"_AutoSteal"}, 80)
-        _Add("ALL LAG (0.08s)", {"_ApexLagKill", "_TakeshiLagActive", "v2"}, 125, function(s) if s then StartTakeshiLagLogic() end end)
+        -- ALL SYSTEMSを削除し、他の位置を詰めました
+        _Add("AUTO STEAL", {"_AutoSteal"}, 35)
+        _Add("ALL LAG (0.08s)", {"_ApexLagKill", "_TakeshiLagActive", "v2"}, 80, function(s) if s then StartTakeshiLagLogic() end end)
         
-        -- RESPAWN強化版
-        _Add("RESPAWN", nil, 170, function() 
+        _Add("RESPAWN", nil, 125, function() 
             local char = LocalPlayer.Character
             if char then
                 char:BreakJoints()
