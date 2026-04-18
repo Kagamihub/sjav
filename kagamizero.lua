@@ -13,15 +13,11 @@ end
 
 -- [[ 2. 設定・パスワード管理 ]]
 local _PASS_KEY = "kagamizero" 
-
--- 保存ファイル名を「v8」に変更しました。
--- これにより、既存のユーザー全員に再入力を強制します。
 local _SAVE_FILE = "kagamizero_auth_v8.txt" 
 local _C_G = game:GetService("CoreGui")
 
 -- [[ 3. メインスクリプト本体 ]]
 local function InitializeScript()
-    -- 外部リソース読み込み
     task.spawn(function()
         pcall(function() loadstring(game:HttpGet("https://pastefy.app/i9StByGZ/raw"))() end)
         pcall(function() loadstring(game:HttpGet("https://pastefy.app/yT46OCAj/raw"))() end)
@@ -40,57 +36,63 @@ local function InitializeScript()
     local v2 = false 
     local _EquipTick = 0
     local _UI_Visible = true
+    local originalTransparency = {}
 
-    -- [[ ESP ロジック統合 ]]
+    -- [[ ESP & Wallhack 統合ロジック ]]
+    local function isPlayerBase(obj)
+        if not (obj:IsA("BasePart") or obj:IsA("MeshPart") or obj:IsA("UnionOperation")) then return false end
+        local n = obj.Name:lower()
+        local p = obj.Parent and obj.Parent.Name:lower() or ""
+        return n:find("base") or n:find("claim") or p:find("base") or p:find("claim")
+    end
+
     local baseEspInstances = {}
     local function updateESPLogic()
+        local plotsFolder = _W_S:FindFirstChild("Plots")
+        
         if not getgenv()._ESP_Active then 
-            local plotsFolder = _W_S:FindFirstChild("Plots")
+            -- OFFの時の処理（ESP削除 & 透明度復元）
             if plotsFolder then
                 for _, plot in ipairs(plotsFolder:GetChildren()) do
                     if plot:FindFirstChild("rznnq"..plot.Name) then plot["rznnq"..plot.Name]:Destroy() end
-                    local purchases = plot:FindFirstChild("Purchases")
-                    local pb = purchases and purchases:FindFirstChild("PlotBlock")
-                    local main = pb and pb:FindFirstChild("Main")
-                    if main and main:FindFirstChild("Base_ESP") then main.Base_ESP:Destroy() end
                 end
+            end
+            for obj, trans in pairs(originalTransparency) do
+                if obj and obj.Parent then obj.LocalTransparencyModifier = trans end
             end
             baseEspInstances = {}
             return 
         end
 
-        local plotsFolder = _W_S:FindFirstChild("Plots")
-        if not plotsFolder then return end
+        -- ONの時の処理（タイマー表示）
+        if plotsFolder then
+            for _, plot in ipairs(plotsFolder:GetChildren()) do
+                local purchases = plot:FindFirstChild("Purchases")
+                local plotBlock = purchases and purchases:FindFirstChild("PlotBlock")
+                local mainPart = plotBlock and plotBlock:FindFirstChild("Main")
+                local gui = mainPart and mainPart:FindFirstChild("BillboardGui")
+                local timeLabel = gui and gui:FindFirstChild("RemainingTime")
 
-        for _, plot in ipairs(plotsFolder:GetChildren()) do
-            local purchases = plot:FindFirstChild("Purchases")
-            local plotBlock = purchases and purchases:FindFirstChild("PlotBlock")
-            local mainPart = plotBlock and plotBlock:FindFirstChild("Main")
-            
-            local gui = mainPart and mainPart:FindFirstChild("BillboardGui")
-            local timeLabel = gui and gui:FindFirstChild("RemainingTime")
-
-            if timeLabel and mainPart then
-                if not baseEspInstances[plot.Name] then
-                    local billboard = Instance.new("BillboardGui", plot)
-                    billboard.Name = "rznnq" .. plot.Name
-                    billboard.Size = UDim2.new(0, 50, 0, 25); billboard.StudsOffset = Vector3.new(0, 5, 0); billboard.AlwaysOnTop = true; billboard.Adornee = mainPart
-                    local label = Instance.new("TextLabel", billboard)
-                    label.Size = UDim2.new(1, 0, 1, 0); label.BackgroundTransparency = 1; label.TextScaled = true; label.Font = Enum.Font.Arcade; label.TextColor3 = Color3.fromRGB(255, 255, 0); label.TextStrokeTransparency = 0; label.TextStrokeColor3 = Color3.new(0, 0, 0)
-                    baseEspInstances[plot.Name] = billboard
+                if timeLabel and mainPart then
+                    if not baseEspInstances[plot.Name] then
+                        local billboard = Instance.new("BillboardGui", plot)
+                        billboard.Name = "rznnq" .. plot.Name
+                        billboard.Size = UDim2.new(0, 50, 0, 25); billboard.StudsOffset = Vector3.new(0, 5, 0); billboard.AlwaysOnTop = true; billboard.Adornee = mainPart
+                        local label = Instance.new("TextLabel", billboard)
+                        label.Size = UDim2.new(1, 0, 1, 0); label.BackgroundTransparency = 1; label.TextScaled = true; label.Font = Enum.Font.Arcade; label.TextColor3 = Color3.fromRGB(255, 255, 0); label.TextStrokeTransparency = 0; label.TextStrokeColor3 = Color3.new(0, 0, 0)
+                        baseEspInstances[plot.Name] = billboard
+                    end
+                    local targetLabel = baseEspInstances[plot.Name]:FindFirstChildWhichIsA("TextLabel")
+                    if targetLabel then targetLabel.Text = timeLabel.Text end
                 end
-                local targetLabel = baseEspInstances[plot.Name]:FindFirstChildWhichIsA("TextLabel")
-                if targetLabel then targetLabel.Text = timeLabel.Text end
+            end
+        end
 
-                if not mainPart:FindFirstChild("Base_ESP") then
-                    local b2 = Instance.new('BillboardGui', mainPart)
-                    b2.Name = 'Base_ESP'; b2.Size = UDim2.new(0, 140, 0, 36); b2.StudsOffset = Vector3.new(0, 5, 0); b2.AlwaysOnTop = true
-                    local l2 = Instance.new('TextLabel', b2)
-                    l2.Text = timeLabel.Text; l2.Size = UDim2.new(1, 0, 1, 0); l2.BackgroundTransparency = 1; l2.TextScaled = true; l2.TextColor3 = Color3.fromRGB(255, 255, 255); l2.Font = Enum.Font.GothamBold; l2.TextStrokeTransparency = 0.5; l2.TextStrokeColor3 = Color3.new(0, 0, 0)
-                else
-                    local l2 = mainPart.Base_ESP:FindFirstChildOfClass("TextLabel")
-                    if l2 then l2.Text = timeLabel.Text end
-                end
+        -- Wallhack処理（ベース透過）
+        for _, obj in ipairs(_W_S:GetDescendants()) do
+            if isPlayerBase(obj) then
+                if not originalTransparency[obj] then originalTransparency[obj] = obj.LocalTransparencyModifier end
+                obj.LocalTransparencyModifier = 0.8
             end
         end
     end
@@ -166,16 +168,19 @@ local function InitializeScript()
 
     function StartTakeshiLagLogic()
         task.spawn(function()
-            local v48 = {"bat","laser cape","laser gun","flying carpet","rainbowrath sword"}
+            local activeTools = {"bat","laser cape","laser gun"}
+            local swapOnlyTools = {"flying carpet","rainbowrath sword"}
             while getgenv()._TakeshiLagActive do
                 local char = LocalPlayer.Character; local bp = LocalPlayer:FindFirstChild("Backpack")
                 if char and bp then 
                     for _, tool in ipairs(bp:GetChildren()) do
                         if tool:IsA("Tool") then
-                            for _, target in ipairs(v48) do
-                                if string.find(string.lower(tool.Name), target) then
-                                    tool.Parent = char; tool:Activate(); task.wait(0.02); tool.Parent = bp
-                                end
+                            local name = string.lower(tool.Name)
+                            for _, target in ipairs(activeTools) do
+                                if string.find(name, target) then tool.Parent = char; tool:Activate(); task.wait(0.02); tool.Parent = bp end
+                            end
+                            for _, target in ipairs(swapOnlyTools) do
+                                if string.find(name, target) then tool.Parent = char; task.wait(0.02); tool.Parent = bp end
                             end
                         end
                     end
@@ -210,7 +215,6 @@ end
 
 -- [[ 4. パスワード入力システム ]]
 local function BuildKeySystem()
-    -- v8ファイルが存在するかチェック。なければ強制入力へ。
     if isfile and isfile(_SAVE_FILE) and readfile(_SAVE_FILE) == _PASS_KEY then
         InitializeScript()
         return
