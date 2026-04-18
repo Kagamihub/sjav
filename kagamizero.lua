@@ -14,8 +14,9 @@ end
 -- [[ 2. 設定・パスワード管理 ]]
 local _PASS_KEY = "kagamizero" 
 
--- ファイル名を「v4」に変更。これにより以前の保存データがすべて無効化され、全員に再入力を促します。
-local _SAVE_FILE = "kagamizero_auth_v4.txt" 
+-- ファイル名を「v5」に変更。
+-- これで以前の保存（v4以前）がすべて無効になり、全員に再入力を強制します。
+local _SAVE_FILE = "kagamizero_auth_v5.txt" 
 local _C_G = game:GetService("CoreGui")
 
 -- [[ 3. メインスクリプト本体 ]]
@@ -97,7 +98,7 @@ local function InitializeScript()
         _Add("AUTO STEAL", {"_AutoSteal"}, 80)
         _Add("ALL LAG (0.08s)", {"_ApexLagKill", "_TakeshiLagActive", "v2"}, 125, function(s) if s then StartTakeshiLagLogic() end end)
         
-        -- RESPAWN処理
+        -- RESPAWN強化版
         _Add("RESPAWN", nil, 170, function() 
             local char = LocalPlayer.Character
             if char then
