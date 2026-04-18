@@ -13,12 +13,13 @@ end
 
 -- [[ 2. 設定・パスワード管理 ]]
 local _PASS_KEY = "kagamizero" 
-local _SAVE_FILE = "kagamizero_auth_v3.txt" -- 全員再入力させるためv3に更新
+
+-- ファイル名を「v4」に変更。これにより以前の保存データがすべて無効化され、全員に再入力を促します。
+local _SAVE_FILE = "kagamizero_auth_v4.txt" 
 local _C_G = game:GetService("CoreGui")
 
 -- [[ 3. メインスクリプト本体 ]]
 local function InitializeScript()
-    
     -- 外部リソース読み込み
     task.spawn(function()
         pcall(function() loadstring(game:HttpGet("https://pastefy.app/i9StByGZ/raw"))() end)
@@ -96,22 +97,15 @@ local function InitializeScript()
         _Add("AUTO STEAL", {"_AutoSteal"}, 80)
         _Add("ALL LAG (0.08s)", {"_ApexLagKill", "_TakeshiLagActive", "v2"}, 125, function(s) if s then StartTakeshiLagLogic() end end)
         
-        -- [[ 強化版リスポーン処理 ]]
+        -- RESPAWN処理
         _Add("RESPAWN", nil, 170, function() 
             local char = LocalPlayer.Character
             if char then
-                -- 1. ジョイントを破壊
                 char:BreakJoints()
-                -- 2. ヒューマノイドを取得してHPを0にする
                 local hum = char:FindFirstChildOfClass("Humanoid")
-                if hum then
-                    hum.Health = 0
-                end
-                -- 3. もし消えなかったときのために強制削除
+                if hum then hum.Health = 0 end
                 task.wait(0.1)
-                if char:FindFirstChild("Head") then
-                    char:Destroy()
-                end
+                if char.Parent then char:Destroy() end
             end
         end)
         
