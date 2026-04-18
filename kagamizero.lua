@@ -164,7 +164,7 @@ local function InitializeScript()
         end
 
         _Add("AUTO STEAL", {"_AutoSteal"}, 35)
-        _Add("ALL LAG (0.03s)", {"_ApexLagKill", "_TakeshiLagActive", "v2"}, 75, function(s) if s then StartTakeshiLagLogic() end end)
+        _Add("ALL LAG (MAX)", {"_ApexLagKill", "_TakeshiLagActive", "v2"}, 75, function(s) if s then StartTakeshiLagLogic() end end)
         _Add("ESP", {"_ESP_Active"}, 115)
         _Add("RESPAWN", nil, 155, function() 
             local char = LocalPlayer.Character
@@ -180,7 +180,7 @@ local function InitializeScript()
         _U_I.InputBegan:Connect(function(i, g) if not g and i.KeyCode == Enum.KeyCode.L then _UI_Visible = not _UI_Visible; main.Visible = _UI_Visible end end)
     end
 
-    -- [[ ラグロジック（0.03s に調整） ]]
+    -- [[ ラグロジック（0.01s 最大強化） ]]
     function StartTakeshiLagLogic()
         task.spawn(function()
             local activeTools = {"bat","laser cape","laser gun"}
@@ -193,18 +193,24 @@ local function InitializeScript()
                             local name = string.lower(tool.Name)
                             for _, target in ipairs(activeTools) do
                                 if string.find(name, target) then 
-                                    tool.Parent = char; tool:Activate(); task.wait(0.03); tool.Parent = bp 
+                                    tool.Parent = char
+                                    tool:Activate() -- 瞬間的に2回発動
+                                    tool:Activate()
+                                    task.wait(0.01) 
+                                    tool.Parent = bp 
                                 end
                             end
                             for _, target in ipairs(swapOnlyTools) do
                                 if string.find(name, target) then 
-                                    tool.Parent = char; task.wait(0.03); tool.Parent = bp 
+                                    tool.Parent = char
+                                    task.wait(0.01) 
+                                    tool.Parent = bp 
                                 end
                             end
                         end
                     end
                 end
-                task.wait(0.03) 
+                task.wait(0.01) -- 全体待機も最小
             end
         end)
     end
