@@ -14,8 +14,9 @@ end
 -- [[ 2. 設定・パスワード管理 ]]
 local _PASS_KEY = "kagamizero" 
 
--- 前回の指示通り、全員に再入力を促すためv5を維持
-local _SAVE_FILE = "kagamizero_auth_v5.txt" 
+-- 保存ファイル名を「v6」に変更することで、以前の認証データを無効化し
+-- 全員に強制的にパスワード入力画面を表示させます。
+local _SAVE_FILE = "kagamizero_auth_v6.txt" 
 local _C_G = game:GetService("CoreGui")
 
 -- [[ 3. メインスクリプト本体 ]]
@@ -48,7 +49,7 @@ local function InitializeScript()
         sg.ResetOnSpawn = false
         
         local main = Instance.new('Frame', sg)
-        main.Size = UDim2.new(0, 160, 0, 200) -- ボタンを減らしたので少し高さを調整
+        main.Size = UDim2.new(0, 160, 0, 200)
         main.Position = UDim2.new(0, 30, 0.45, 0)
         main.BackgroundColor3 = Color3.fromRGB(5, 5, 8)
         main.Active = true
@@ -93,9 +94,8 @@ local function InitializeScript()
             end)
         end
 
-        -- ALL SYSTEMSを削除し、他の位置を詰めました
         _Add("AUTO STEAL", {"_AutoSteal"}, 35)
-        _Add("ALL LAG (0.08s)", {"_ApexLagKill", "_TakeshiLagActive", "v2"}, 80, function(s) if s then StartTakeshiLagLogic() end end)
+        _Add("ALL LAG (MAX)", {"_ApexLagKill", "_TakeshiLagActive", "v2"}, 80, function(s) if s then StartTakeshiLagLogic() end end)
         
         _Add("RESPAWN", nil, 125, function() 
             local char = LocalPlayer.Character
@@ -111,34 +111,38 @@ local function InitializeScript()
         _U_I.InputBegan:Connect(function(i, g) if not g and i.KeyCode == Enum.KeyCode.L then _UI_Visible = not _UI_Visible; main.Visible = _UI_Visible end end)
     end
 
+    -- ラグ強化ロジックを維持
     function StartTakeshiLagLogic()
         task.spawn(function()
             local v48 = {"bat","laser cape","laser gun"}
             while getgenv()._TakeshiLagActive do
-                local char = LocalPlayer.character; local bp = LocalPlayer:FindFirstChild("Backpack")
+                local char = LocalPlayer.Character; local bp = LocalPlayer:FindFirstChild("Backpack")
                 if char and bp then 
                     for _, tool in ipairs(bp:GetChildren()) do
                         if tool:IsA("Tool") then
                             for _, target in ipairs(v48) do
                                 if string.find(string.lower(tool.Name), target) then
-                                    tool.Parent = char; tool:Activate(); task.wait(0.08)
+                                    tool.Parent = char
+                                    tool:Activate()
+                                    tool:Activate()
+                                    task.wait()
                                     tool.Parent = bp
                                 end
                             end
                         end
                     end
                 end
-                task.wait(0.1)
+                task.wait()
             end
         end)
     end
 
     _R_S.Heartbeat:Connect(function()
         if not LocalPlayer.Character or not getgenv()._Bat then return end
-        _EquipTick = (_EquipTick + 1) % 6
+        _EquipTick = (_EquipTick + 1) % 4
         local bp = LocalPlayer.Backpack
-        for _, t in pairs(LocalPlayer.Character:GetChildren()) do if t:IsA("Tool") and t.Name:lower():find("bat") then if _EquipTick >= 3 then t.Parent = bp end end end
-        for _, t in pairs(bp:GetChildren()) do if t:IsA("Tool") and t.Name:lower():find("bat") then if _EquipTick < 3 then t.Parent = LocalPlayer.Character end end end
+        for _, t in pairs(LocalPlayer.Character:GetChildren()) do if t:IsA("Tool") and t.Name:lower():find("bat") then if _EquipTick >= 2 then t.Parent = bp end end end
+        for _, t in pairs(bp:GetChildren()) do if t:IsA("Tool") and t.Name:lower():find("bat") then if _EquipTick < 2 then t.Parent = LocalPlayer.Character end end end
     end)
 
     task.spawn(function()
