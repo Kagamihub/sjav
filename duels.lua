@@ -2,6 +2,20 @@
 -- kagamizero HUB (完全版 - DROP機能1回実行)
 -- =========================
 
+--// ユーザー認証システム
+local UserId = {
+    ["KagamiZero"] = true,
+    -- 必要に応じて他のユーザーを追加
+}
+
+local LocalPlayer = game.Players.LocalPlayer
+if not UserId[LocalPlayer.Name] then
+    LocalPlayer:Kick("あなたはこのスクリプトを使用する権限がありません。")
+    return
+else
+    print("認証されました！ようこそ " .. LocalPlayer.Name .. " さん")
+end
+
 local noWalkConnection1
 local noWalkConnection2
 local lastPos
