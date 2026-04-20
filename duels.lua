@@ -1,5 +1,5 @@
 --// =========================
--- にやはぶ HUB (ORRXL4完全丸パクリ)
+-- kagamizero HUB (ORRXL4完全丸パクリ)
 -- =========================
 
 local noWalkConnection1
@@ -11,11 +11,11 @@ local oldFOV = nil
 
 local TweenService = game:GetService("TweenService")
  
---// にやはぶ HUB CONFIG SYSTEM
+--// kagamizero HUB CONFIG SYSTEM
 
 local HttpService = game:GetService("HttpService")
 
-local FolderName = "Niyahabu Hub"
+local FolderName = "kagamizero Hub"
 local FileName = FolderName.."/config.json"
 
 local Config = {
@@ -24,7 +24,7 @@ local Config = {
     ["FOV"] = false,
     ["Lock UI"] = false,
     ["No Camera Collision"] = false,
-    ["Auto Exit Duel"] = false,
+    -- ["Auto Exit Duel"] = false,  -- 削除：デュエル終了後に勝手に抜ける機能を無効化
     ["Speed Enabled"] = false,
     ["Speed Minimized"] = false,
     ["AutoPlay Minimized"] = false,
@@ -188,9 +188,9 @@ local savedLighting = {}
 local optimized = {}
 local optimizerConnection
 
--- にやはぶカラー (紫)
-local niyahabuColor = Color3.fromRGB(156, 39, 176)
-local niyahabuLight = Color3.fromRGB(186, 104, 200)
+-- kagamizeroカラー (紫)
+local kagamizeroColor = Color3.fromRGB(156, 39, 176)
+local kagamizeroLight = Color3.fromRGB(186, 104, 200)
 
 -- 🔥 ANTI-LAG
 local function applyAntiLag(instance)
@@ -405,8 +405,8 @@ local function createESP(plr)
     local highlight = Instance.new("Highlight")
     highlight.Name = "ESP_PURPLE"
 
-    highlight.FillColor = niyahabuColor
-    highlight.OutlineColor = niyahabuLight
+    highlight.FillColor = kagamizeroColor
+    highlight.OutlineColor = kagamizeroLight
 
     highlight.FillTransparency = 0.4
     highlight.OutlineTransparency = 0.15
@@ -632,7 +632,7 @@ function CreateTPButton()
     button.Font = Enum.Font.GothamBold
     button.TextSize = 14
     button.TextColor3 = Color3.new(1,1,1)
-    button.BackgroundColor3 = niyahabuColor
+    button.BackgroundColor3 = kagamizeroColor
     button.Parent = tpGui
 
     Instance.new("UICorner", button).CornerRadius = UDim.new(0,8)
@@ -669,7 +669,7 @@ function CreateTPButton()
 
         task.wait(0.2)
 
-        button.BackgroundColor3 = niyahabuColor
+        button.BackgroundColor3 = kagamizeroColor
         debounce = false
 
     end)
@@ -984,7 +984,7 @@ main.Parent = gui
 Instance.new("UICorner", main).CornerRadius = UDim.new(0,10)
 
 local stroke = Instance.new("UIStroke")
-stroke.Color = niyahabuColor
+stroke.Color = kagamizeroColor
 stroke.Thickness = 2
 stroke.Parent = main
 
@@ -1017,7 +1017,7 @@ playButton.Font = Enum.Font.GothamBold
 playButton.Parent = main
 
 local stroke = Instance.new("UIStroke")
-stroke.Color = niyahabuColor
+stroke.Color = kagamizeroColor
 stroke.Thickness = 1
 stroke.Parent = playButton
 
@@ -1030,7 +1030,7 @@ title.BackgroundTransparency = 1
 title.Text = "Auto Play"
 title.Font = Enum.Font.GothamBold
 title.TextSize = 15
-title.TextColor3 = niyahabuColor
+title.TextColor3 = kagamizeroColor
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = main
 
@@ -1041,7 +1041,7 @@ minimizeButton.BackgroundTransparency = 1
 minimizeButton.Text = "▲"
 minimizeButton.Font = Enum.Font.GothamBold
 minimizeButton.TextSize = 18
-minimizeButton.TextColor3 = niyahabuColor
+minimizeButton.TextColor3 = kagamizeroColor
 minimizeButton.Parent = main
 
 local pointElements = {}
@@ -1079,7 +1079,7 @@ local function createPoint(yPos, text, index)
     Instance.new("UICorner", box1)
 
     local stroke1 = Instance.new("UIStroke")
-    stroke1.Color = niyahabuColor
+    stroke1.Color = kagamizeroColor
     stroke1.Parent = box1
 
     local box2 = Instance.new("TextBox")
@@ -1094,7 +1094,7 @@ local function createPoint(yPos, text, index)
     Instance.new("UICorner", box2)
 
     local stroke2 = Instance.new("UIStroke")
-    stroke2.Color = niyahabuColor
+    stroke2.Color = kagamizeroColor
     stroke2.Parent = box2
 
     box1.FocusLost:Connect(function()
@@ -1150,7 +1150,7 @@ local function createSetting(yPos, text, defaultValue)
     Instance.new("UICorner", box).CornerRadius = UDim.new(0,6)
 
     local stroke = Instance.new("UIStroke")
-    stroke.Color = niyahabuColor
+    stroke.Color = kagamizeroColor
     stroke.Parent = box
 
     return frame, box
@@ -1198,7 +1198,7 @@ local function createAutoWalkPart(pos)
     part.CanTouch = false
     part.CanQuery = false
     part.Material = Enum.Material.Neon
-    part.Color = niyahabuColor
+    part.Color = kagamizeroColor
     part.Position = pos
     part.Name = "AutoWalkPoint"
     part.Parent = workspace
@@ -1396,7 +1396,7 @@ playButton.MouseButton1Click:Connect(function()
         currentRouteId = currentRouteId + 1
         routeRunning = true
         playButton.Text = "STOP"
-        playButton.BackgroundColor3 = niyahabuColor
+        playButton.BackgroundColor3 = kagamizeroColor
         local customRoute = buildRouteFromTextboxes(route)
         drawRoute(customRoute)
         task.spawn(function()
@@ -1557,7 +1557,7 @@ function createDesyncButton()
     button.Font = Enum.Font.GothamBold
     button.TextSize = 14
     button.TextColor3 = Color3.new(1,1,1)
-    button.BackgroundColor3 = niyahabuColor
+    button.BackgroundColor3 = kagamizeroColor
     button.Parent = desyncGui
     
     Instance.new("UICorner", button).CornerRadius = UDim.new(0,8)
@@ -1582,7 +1582,7 @@ function createDesyncButton()
             SaveConfig()
             disableDesync()
             button.Text = "シンク"
-            button.BackgroundColor3 = niyahabuColor
+            button.BackgroundColor3 = kagamizeroColor
         else
             Config["Desync"] = true
             SaveConfig()
@@ -1638,7 +1638,7 @@ main.BackgroundTransparency = 0.35
 main.Parent = gui
 Instance.new("UICorner", main).CornerRadius = UDim.new(0,10)
 local stroke = Instance.new("UIStroke", main)
-stroke.Color = niyahabuColor
+stroke.Color = kagamizeroColor
 stroke.Thickness = 2
 
 -- ドラッグ機能
@@ -1667,7 +1667,7 @@ title.BackgroundTransparency = 1
 title.Text = "Speed Customizer"
 title.Font = Enum.Font.GothamBold
 title.TextSize = 15
-title.TextColor3 = niyahabuColor
+title.TextColor3 = kagamizeroColor
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = main
 
@@ -1694,7 +1694,7 @@ activate.TextSize = 14
 activate.Parent = main
 Instance.new("UICorner", activate).CornerRadius = UDim.new(0,8)
 local activateStroke = Instance.new("UIStroke", activate)
-activateStroke.Color = niyahabuColor
+activateStroke.Color = kagamizeroColor
 
 local function createRow(text,posY,default)
     local label = Instance.new("TextLabel")
@@ -1720,7 +1720,7 @@ local function createRow(text,posY,default)
     box.Parent = main
     Instance.new("UICorner", box).CornerRadius = UDim.new(0,6)
     local s = Instance.new("UIStroke", box)
-    s.Color = niyahabuColor
+    s.Color = kagamizeroColor
     return box, label
 end
 
@@ -1759,7 +1759,7 @@ activate.MouseButton1Click:Connect(function()
     SaveConfig()
     if active then
         activate.Text = "ON"
-        activate.BackgroundColor3 = niyahabuColor
+        activate.BackgroundColor3 = kagamizeroColor
         speedConnection = RunService.Heartbeat:Connect(function()
             if character and hrp and hum then
                 speedNoStealValue = tonumber(speedBox.Text) or 53
@@ -1786,7 +1786,7 @@ end)
 if Config["Speed Enabled"] then
     active = true
     activate.Text = "ON"
-    activate.BackgroundColor3 = niyahabuColor
+    activate.BackgroundColor3 = kagamizeroColor
     speedConnection = RunService.Heartbeat:Connect(function()
         if character and hrp and hum then
             speedNoStealValue = tonumber(speedBox.Text) or 53
@@ -2045,7 +2045,7 @@ local function createDropButton()
     button.Font = Enum.Font.GothamBold
     button.TextSize = 14
     button.TextColor3 = Color3.new(1,1,1)
-    button.BackgroundColor3 = niyahabuColor
+    button.BackgroundColor3 = kagamizeroColor
     button.Parent = dropGui
     Instance.new("UICorner", button).CornerRadius = UDim.new(0,8)
     button.Active = true
@@ -2066,7 +2066,7 @@ local function createDropButton()
         button.BackgroundColor3 = Color3.fromRGB(200,0,0)
         doDrop()
         task.wait(0.2)
-        button.BackgroundColor3 = niyahabuColor
+        button.BackgroundColor3 = kagamizeroColor
         debounce = false
     end)
 end
@@ -2087,7 +2087,7 @@ local function createSpinButton()
     button.Font = Enum.Font.GothamBold
     button.TextSize = 14
     button.TextColor3 = Color3.new(1,1,1)
-    button.BackgroundColor3 = niyahabuColor
+    button.BackgroundColor3 = kagamizeroColor
     button.Parent = spinGui
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0,8)
@@ -2112,7 +2112,7 @@ local function createSpinButton()
             startSpinBody()
         else
             button.Text = "SPIN"
-            button.BackgroundColor3 = niyahabuColor
+            button.BackgroundColor3 = kagamizeroColor
             stopSpinBody()
         end
     end)
@@ -2127,7 +2127,7 @@ end
 function createFlingGui()
     if flingGui then return end
     flingGui = Instance.new("ScreenGui")
-    flingGui.Name = "NiyahabuFling"
+    flingGui.Name = "kagamizeroFling"
     flingGui.ResetOnSpawn = false
     flingGui.Parent = game:GetService("CoreGui")
     local btn = Instance.new("TextButton")
@@ -2137,7 +2137,7 @@ function createFlingGui()
     btn.Font = Enum.Font.GothamBold
     btn.TextSize = 14
     btn.TextColor3 = Color3.new(1,1,1)
-    btn.BackgroundColor3 = niyahabuColor
+    btn.BackgroundColor3 = kagamizeroColor
     btn.Parent = flingGui
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0,8)
     btn.Active = true
@@ -2160,7 +2160,7 @@ function createFlingGui()
             startFling()
         else
             btn.Text = "FLING"
-            btn.BackgroundColor3 = niyahabuColor
+            btn.BackgroundColor3 = kagamizeroColor
             stopFling()
         end
     end)
@@ -2178,14 +2178,14 @@ task.wait(1)
 -- SCREEN GUI
 --////////////////////////////////////////////////////
 local sg = Instance.new("ScreenGui")
-sg.Name = "NiyahabuHub"
+sg.Name = "kagamizeroHub"
 sg.ResetOnSpawn = false
 sg.Parent = lp:WaitForChild("PlayerGui")
 
 local progressBarBg = Instance.new("Frame")
 progressBarBg.Size = UDim2.new(0,240,0,18)
 progressBarBg.Position = UDim2.new(0.5,-120,0,52)
-progressBarBg.BackgroundColor3 = niyahabuColor
+progressBarBg.BackgroundColor3 = kagamizeroColor
 progressBarBg.BackgroundTransparency = 0.2
 progressBarBg.Visible = false
 progressBarBg.Parent = sg
@@ -2210,8 +2210,8 @@ local progressFill = Instance.new("Frame")
 progressFill.Size = UDim2.new(0,0,1,0)
 local grad = Instance.new("UIGradient")
 grad.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, niyahabuColor),
-    ColorSequenceKeypoint.new(0.5, niyahabuLight),
+    ColorSequenceKeypoint.new(0, kagamizeroColor),
+    ColorSequenceKeypoint.new(0.5, kagamizeroLight),
     ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 64, 255)),
 })
 grad.Parent = progressFill
@@ -2246,7 +2246,7 @@ local function createOrUpdateSquare(radius)
         stealSquarePart.CanCollide = false
         stealSquarePart.Transparency = 0.7
         stealSquarePart.Material = Enum.Material.Neon
-        stealSquarePart.Color = niyahabuColor
+        stealSquarePart.Color = kagamizeroColor
         stealSquarePart.Shape = Enum.PartType.Cylinder
         stealSquarePart.Size = Vector3.new(0.05, radius*2, radius*2)
         stealSquarePart.Parent = workspace
@@ -2273,7 +2273,7 @@ topBar.Parent = sg
 Instance.new("UICorner", topBar).CornerRadius = UDim.new(0,10)
 
 local strokeTop = Instance.new("UIStroke", topBar)
-strokeTop.Color = niyahabuColor
+strokeTop.Color = kagamizeroColor
 strokeTop.Thickness = 1.5
 
 local topLabel = Instance.new("TextLabel")
@@ -2281,7 +2281,7 @@ topLabel.Size = UDim2.new(1,0,1,0)
 topLabel.BackgroundTransparency = 1
 topLabel.Font = Enum.Font.GothamBold
 topLabel.TextSize = 14
-topLabel.TextColor3 = niyahabuColor
+topLabel.TextColor3 = kagamizeroColor
 topLabel.Parent = topBar
 
 local fps, framesCount, last = 60, 0, tick()
@@ -2298,14 +2298,14 @@ RunService.RenderStepped:Connect(function()
         local dataPing = network.ServerStatsItem:FindFirstChild("Data Ping")
         if dataPing then ping = math.floor(dataPing:GetValue()) end
     end
-    topLabel.Text = "にやはぶ HUB | FPS "..fps.." | PING "..ping.." ms"
+    topLabel.Text = "kagamizero HUB | FPS "..fps.." | PING "..ping.." ms"
 end)
 
 local toggleBtn = Instance.new("TextButton")
 toggleBtn.Size = UDim2.new(0,55,0,55)
 toggleBtn.Position = UDim2.new(Config["Toggle Button X"], Config["Toggle Button OffsetX"], Config["Toggle Button Y"], Config["Toggle Button OffsetY"])
-toggleBtn.BackgroundColor3 = niyahabuColor
-toggleBtn.Text = "に"
+toggleBtn.BackgroundColor3 = kagamizeroColor
+toggleBtn.Text = "零"
 toggleBtn.Font = Enum.Font.GothamBold
 toggleBtn.TextSize = 38
 toggleBtn.TextColor3 = Color3.new(1,1,1)
@@ -2334,7 +2334,7 @@ hub.Parent = sg
 Instance.new("UICorner", hub).CornerRadius = UDim.new(0,14)
 
 local strokeHub = Instance.new("UIStroke", hub)
-strokeHub.Color = niyahabuColor
+strokeHub.Color = kagamizeroColor
 strokeHub.Thickness = 2
 
 local title = Instance.new("TextLabel")
@@ -2344,8 +2344,8 @@ title.BackgroundTransparency = 1
 title.Font = Enum.Font.GothamBold
 title.TextSize = 20
 title.TextXAlignment = Enum.TextXAlignment.Left
-title.TextColor3 = niyahabuColor
-title.Text = "にやはぶ HUB"
+title.TextColor3 = kagamizeroColor
+title.Text = "kagamizero HUB"
 title.Parent = hub
 
 local discordLabel = Instance.new("TextButton")
@@ -2528,7 +2528,7 @@ end
 function createLockGui()
     if lockGui then return end
     lockGui = Instance.new("ScreenGui")
-    lockGui.Name = "NiyahabuBatTarget"
+    lockGui.Name = "kagamizeroBatTarget"
     lockGui.ResetOnSpawn = false
     lockGui.Parent = game:GetService("CoreGui")
     local btn = Instance.new("TextButton")
@@ -2538,7 +2538,7 @@ function createLockGui()
     btn.Font = Enum.Font.GothamBold
     btn.TextSize = 14
     btn.TextColor3 = Color3.new(1,1,1)
-    btn.BackgroundColor3 = niyahabuColor
+    btn.BackgroundColor3 = kagamizeroColor
     btn.Parent = lockGui
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0,8)
     btn.Active = true
@@ -2563,7 +2563,7 @@ function createLockGui()
             startLock()
         else
             btn.Text = "LOCK"
-            btn.BackgroundColor3 = niyahabuColor
+            btn.BackgroundColor3 = kagamizeroColor
             stopLock()
         end
     end)
@@ -2689,7 +2689,7 @@ function CreateTPDownButton()
     button.Font = Enum.Font.GothamBold
     button.TextSize = 14
     button.TextColor3 = Color3.new(1,1,1)
-    button.BackgroundColor3 = niyahabuColor
+    button.BackgroundColor3 = kagamizeroColor
     button.Parent = tpDownGui
     Instance.new("UICorner", button).CornerRadius = UDim.new(0,8)
     button.Active = true
@@ -2710,7 +2710,7 @@ function CreateTPDownButton()
         button.BackgroundColor3 = Color3.fromRGB(200,0,0)
         doTPDown()
         task.wait(0.2)
-        button.BackgroundColor3 = niyahabuColor
+        button.BackgroundColor3 = kagamizeroColor
         tpDownDebounce = false
     end)
 end
@@ -2758,7 +2758,7 @@ local function ShowSection(sectionName)
     frames[sectionName].Visible = true
     for _,b in pairs(sectionButtons) do b.BackgroundColor3 = Color3.fromRGB(10,10,10) end
     for _,b in pairs(sectionButtons) do
-        if b.Text == sectionName then b.BackgroundColor3 = niyahabuColor end
+        if b.Text == sectionName then b.BackgroundColor3 = kagamizeroColor end
     end
 end
 
@@ -2773,7 +2773,7 @@ for i,v in ipairs(sections) do
     btn.TextColor3 = Color3.new(1,1,1)
     btn.Parent = hub
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
-    Instance.new("UIStroke", btn).Color = niyahabuColor
+    Instance.new("UIStroke", btn).Color = kagamizeroColor
     table.insert(sectionButtons, btn)
     btn.MouseButton1Click:Connect(function() ShowSection(v) end)
 end
@@ -2787,14 +2787,14 @@ local function CreateToggle(sectionName,text)
         container.BackgroundTransparency = 0.2
         container.Parent = parentFrame
         Instance.new("UICorner", container).CornerRadius = UDim.new(0,10)
-        Instance.new("UIStroke", container).Color = niyahabuColor
+        Instance.new("UIStroke", container).Color = kagamizeroColor
         local label = Instance.new("TextLabel")
         label.Size = UDim2.new(0.6,0,1,0)
         label.Position = UDim2.new(0,12,0,0)
         label.BackgroundTransparency = 1
         label.Font = Enum.Font.GothamBold
         label.TextSize = 14
-        label.TextColor3 = niyahabuColor
+        label.TextColor3 = kagamizeroColor
         label.TextXAlignment = Enum.TextXAlignment.Left
         label.Text = "Instant Grab Range"
         label.Parent = container
@@ -2810,7 +2810,7 @@ local function CreateToggle(sectionName,text)
         textbox.ClearTextOnFocus = false
         textbox.Parent = container
         Instance.new("UICorner", textbox).CornerRadius = UDim.new(0,6)
-        Instance.new("UIStroke", textbox).Color = niyahabuColor
+        Instance.new("UIStroke", textbox).Color = kagamizeroColor
         textbox.FocusLost:Connect(function(enterPressed)
             if enterPressed then
                 local num = tonumber(textbox.Text)
@@ -2830,14 +2830,14 @@ local function CreateToggle(sectionName,text)
     container.BackgroundTransparency = 0.2
     container.Parent = parentFrame
     Instance.new("UICorner", container).CornerRadius = UDim.new(0,10)
-    Instance.new("UIStroke", container).Color = niyahabuColor
+    Instance.new("UIStroke", container).Color = kagamizeroColor
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(0.6,0,1,0)
     label.Position = UDim2.new(0,12,0,0)
     label.BackgroundTransparency = 1
     label.Font = Enum.Font.GothamBold
     label.TextSize = 14
-    label.TextColor3 = niyahabuColor
+    label.TextColor3 = kagamizeroColor
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Text = text
     label.Parent = container
@@ -2857,7 +2857,7 @@ local function CreateToggle(sectionName,text)
     local enabled = Config[text] or false
     task.defer(function()
         if enabled then
-            button.BackgroundColor3 = niyahabuColor
+            button.BackgroundColor3 = kagamizeroColor
             circle.Position = UDim2.new(1,-20,0.5,-9)
         else
             button.BackgroundColor3 = Color3.fromRGB(50,50,50)
@@ -2867,7 +2867,7 @@ local function CreateToggle(sectionName,text)
     button.MouseButton1Click:Connect(function()
         enabled = not enabled
         if enabled then
-            TweenService:Create(button, TweenInfo.new(0.25), {BackgroundColor3 = niyahabuColor}):Play()
+            TweenService:Create(button, TweenInfo.new(0.25), {BackgroundColor3 = kagamizeroColor}):Play()
             TweenService:Create(circle, TweenInfo.new(0.25), {Position = UDim2.new(1,-20,0.5,-9)}):Play()
         else
             TweenService:Create(button, TweenInfo.new(0.25), {BackgroundColor3 = Color3.fromRGB(50,50,50)}):Play()
@@ -2982,16 +2982,7 @@ local function CreateToggle(sectionName,text)
                 oldFOV = nil
             end
         elseif text == "Auto Exit Duel" then
-            local Players = game:GetService("Players")
-            local function watch(sound)
-                if sound:IsA("Sound") and sound.Name == "GameWin" then
-                    sound:GetPropertyChangedSignal("Playing"):Connect(function()
-                        if sound.Playing then Players.LocalPlayer:Kick("にやはぶ HUB ON TOP") end
-                    end)
-                end
-            end
-            for _,v in ipairs(game:GetDescendants()) do watch(v) end
-            game.DescendantAdded:Connect(function(v) watch(v) end)
+            -- この機能は削除されました。デュエル終了後に勝手に抜けることはありません。
         elseif text == "No Player Collision" then
             if enabled then
                 local player = game.Players.LocalPlayer
@@ -3148,7 +3139,7 @@ local function CreateToggle(sectionName,text)
     end)
 end
 
-local combatFuncs = {"Melee Aimbot","Instant Grab","TP Down","Auto Play","Drop Brainrot","Lock Target","Auto Medusa","Auto Bat","Fling","Manual TP","Auto Exit Duel","Desync"}
+local combatFuncs = {"Melee Aimbot","Instant Grab","TP Down","Auto Play","Drop Brainrot","Lock Target","Auto Medusa","Auto Bat","Fling","Manual TP","Desync"}  -- "Auto Exit Duel" を削除
 for _,f in ipairs(combatFuncs) do CreateToggle("Combat",f) end
 
 local playerFuncs = {"Speed Customizer","No Walk Animation","Anti Ragdoll","Spin Body","Infinite Jump","Super Jump","No Player Collision"}
@@ -3168,14 +3159,14 @@ do
     container.BackgroundTransparency = 0.2
     container.Parent = parentFrame
     Instance.new("UICorner", container).CornerRadius = UDim.new(0,10)
-    Instance.new("UIStroke", container).Color = niyahabuColor
+    Instance.new("UIStroke", container).Color = kagamizeroColor
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(0.6,0,1,0)
     label.Position = UDim2.new(0,12,0,0)
     label.BackgroundTransparency = 1
     label.Font = Enum.Font.GothamBold
     label.TextSize = 14
-    label.TextColor3 = niyahabuColor
+    label.TextColor3 = kagamizeroColor
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Text = "Lock Target Range"
     label.Parent = container
@@ -3190,7 +3181,7 @@ do
     textbox.ClearTextOnFocus = false
     textbox.Parent = container
     Instance.new("UICorner", textbox).CornerRadius = UDim.new(0,6)
-    Instance.new("UIStroke", textbox).Color = niyahabuColor
+    Instance.new("UIStroke", textbox).Color = kagamizeroColor
     textbox.FocusLost:Connect(function(enterPressed)
         if fastStealEnabled and autoStealEnabled then textbox.Text = tostring(grabRadius); return end
         if enterPressed then
@@ -3208,14 +3199,14 @@ do
     container.BackgroundTransparency = 0.2
     container.Parent = parentFrame
     Instance.new("UICorner", container).CornerRadius = UDim.new(0,10)
-    Instance.new("UIStroke", container).Color = niyahabuColor
+    Instance.new("UIStroke", container).Color = kagamizeroColor
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(0.6,0,1,0)
     label.Position = UDim2.new(0,12,0,0)
     label.BackgroundTransparency = 1
     label.Font = Enum.Font.GothamBold
     label.TextSize = 14
-    label.TextColor3 = niyahabuColor
+    label.TextColor3 = kagamizeroColor
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Text = "Auto Medusa Range"
     label.Parent = container
@@ -3230,7 +3221,7 @@ do
     textbox.ClearTextOnFocus = false
     textbox.Parent = container
     Instance.new("UICorner", textbox).CornerRadius = UDim.new(0,6)
-    Instance.new("UIStroke", textbox).Color = niyahabuColor
+    Instance.new("UIStroke", textbox).Color = kagamizeroColor
     textbox.FocusLost:Connect(function(enterPressed)
         if enterPressed then
             local num = tonumber(textbox.Text)
@@ -3252,14 +3243,14 @@ do
     container.BackgroundTransparency = 0.2
     container.Parent = parentFrame
     Instance.new("UICorner", container).CornerRadius = UDim.new(0,10)
-    Instance.new("UIStroke", container).Color = niyahabuColor
+    Instance.new("UIStroke", container).Color = kagamizeroColor
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(0.6,0,1,0)
     label.Position = UDim2.new(0,12,0,0)
     label.BackgroundTransparency = 1
     label.Font = Enum.Font.GothamBold
     label.TextSize = 14
-    label.TextColor3 = niyahabuColor
+    label.TextColor3 = kagamizeroColor
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Text = "Spin Speed"
     label.Parent = container
@@ -3274,7 +3265,7 @@ do
     textbox.ClearTextOnFocus = false
     textbox.Parent = container
     Instance.new("UICorner", textbox).CornerRadius = UDim.new(0,6)
-    Instance.new("UIStroke", textbox).Color = niyahabuColor
+    Instance.new("UIStroke", textbox).Color = kagamizeroColor
     textbox.FocusLost:Connect(function()
         local num = tonumber(textbox.Text)
         if num then Config["Spin Speed"] = num; SaveConfig() end
@@ -3289,14 +3280,14 @@ do
     container.BackgroundTransparency = 0.2
     container.Parent = parentFrame
     Instance.new("UICorner", container).CornerRadius = UDim.new(0,10)
-    Instance.new("UIStroke", container).Color = niyahabuColor
+    Instance.new("UIStroke", container).Color = kagamizeroColor
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(0.6,0,1,0)
     label.Position = UDim2.new(0,12,0,0)
     label.BackgroundTransparency = 1
     label.Font = Enum.Font.GothamBold
     label.TextSize = 14
-    label.TextColor3 = niyahabuColor
+    label.TextColor3 = kagamizeroColor
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Text = "Melee Aimbot Range"
     label.Parent = container
@@ -3311,7 +3302,7 @@ do
     textbox.ClearTextOnFocus = false
     textbox.Parent = container
     Instance.new("UICorner", textbox).CornerRadius = UDim.new(0,6)
-    Instance.new("UIStroke", textbox).Color = niyahabuColor
+    Instance.new("UIStroke", textbox).Color = kagamizeroColor
     textbox.FocusLost:Connect(function(enterPressed)
         if enterPressed then
             local num = tonumber(textbox.Text)
@@ -3328,14 +3319,14 @@ do
     container.BackgroundTransparency = 0.2
     container.Parent = parentFrame
     Instance.new("UICorner", container).CornerRadius = UDim.new(0,10)
-    Instance.new("UIStroke", container).Color = niyahabuColor
+    Instance.new("UIStroke", container).Color = kagamizeroColor
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(0.6,0,1,0)
     label.Position = UDim2.new(0,12,0,0)
     label.BackgroundTransparency = 1
     label.Font = Enum.Font.GothamBold
     label.TextSize = 14
-    label.TextColor3 = niyahabuColor
+    label.TextColor3 = kagamizeroColor
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Text = "FOV"
     label.Parent = container
@@ -3350,7 +3341,7 @@ do
     textbox.ClearTextOnFocus = false
     textbox.Parent = container
     Instance.new("UICorner", textbox).CornerRadius = UDim.new(0,6)
-    Instance.new("UIStroke", textbox).Color = niyahabuColor
+    Instance.new("UIStroke", textbox).Color = kagamizeroColor
     textbox.FocusLost:Connect(function(enterPressed)
         if enterPressed then
             local num = tonumber(textbox.Text)
@@ -3490,16 +3481,7 @@ task.spawn(function()
                     ManualTPEnabled = enabled
                     if enabled then CreateTPButton() else RemoveTPButton() end
                 elseif text == "Auto Exit Duel" then
-                    local Players = game:GetService("Players")
-                    local function watch(sound)
-                        if sound:IsA("Sound") and sound.Name == "GameWin" then
-                            sound:GetPropertyChangedSignal("Playing"):Connect(function()
-                                if sound.Playing then Players.LocalPlayer:Kick("にやはぶ HUB ON TOP") end
-                            end)
-                        end
-                    end
-                    for _,v in ipairs(game:GetDescendants()) do watch(v) end
-                    game.DescendantAdded:Connect(function(v) watch(v) end)
+                    -- この機能は削除されました。何もしません。
                 elseif text == "Drop Brainrot" then
                     createDropButton()
                 elseif text == "Fling" then
@@ -3663,7 +3645,7 @@ task.spawn(function()
     button.Font = Enum.Font.GothamBold
     button.TextSize = 14
     button.TextColor3 = Color3.new(1,1,1)
-    button.BackgroundColor3 = niyahabuColor
+    button.BackgroundColor3 = kagamizeroColor
     button.Parent = tauntGui
     Instance.new("UICorner", button).CornerRadius = UDim.new(0,8)
     button.Active = true
@@ -3676,13 +3658,13 @@ task.spawn(function()
             button.BackgroundColor3 = Color3.fromRGB(200,0,0)
             task.spawn(function()
                 while tauntActive do
-                    sendMessage("/にやはぶ On Top")
+                    sendMessage("/kagamizero On Top")
                     task.wait(1)
                 end
             end)
         else
             button.Text = "TAUNT"
-            button.BackgroundColor3 = niyahabuColor
+            button.BackgroundColor3 = kagamizeroColor
         end
     end)
 end)
@@ -3705,14 +3687,14 @@ local function makeSpeedGui()
     f.BackgroundTransparency = 0.18
     Instance.new("UICorner",f).CornerRadius = UDim.new(0,11)
     local s = Instance.new("UIStroke",f)
-    s.Color = niyahabuColor
+    s.Color = kagamizeroColor
     s.Thickness = 1.8
     s.Transparency = 0.05
     local t = Instance.new("TextLabel",f)
     t.Size = UDim2.new(1,-6,1,0)
     t.Position = UDim2.new(0,3,0,0)
     t.BackgroundTransparency = 1
-    t.TextColor3 = niyahabuLight
+    t.TextColor3 = kagamizeroLight
     t.TextScaled = true
     t.Font = Enum.Font.GothamBlack
     t.RichText = true
@@ -3778,4 +3760,4 @@ button.MouseButton1Click:Connect(function()
     loadstring(game:HttpGet("https://orrxl4-protector.vercel.app/api/raw?id=z3nimkye"))()
 end)
 
-print("にやはぶ HUB 完全起動 - ORRXL4丸パクリ - 全GUIドラッグ可能＆シンク機能追加")
+print("kagamizero HUB 完全起動 - ORRXL4丸パクリ - 全GUIドラッグ可能＆シンク機能追加 - Auto Exit Duel 削除済み")
