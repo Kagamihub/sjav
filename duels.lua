@@ -1,5 +1,5 @@
 --// =========================
--- kagamizero HUB (ORRXL4完全丸パクリ)
+-- kagamizero HUB (完全版 - DROP機能1回実行)
 -- =========================
 
 local noWalkConnection1
@@ -24,7 +24,6 @@ local Config = {
     ["FOV"] = false,
     ["Lock UI"] = false,
     ["No Camera Collision"] = false,
-    -- ["Auto Exit Duel"] = false,  -- 削除：デュエル終了後に勝手に抜ける機能を無効化
     ["Speed Enabled"] = false,
     ["Speed Minimized"] = false,
     ["AutoPlay Minimized"] = false,
@@ -1961,95 +1960,84 @@ end
 local spinGui
 local spinActive = false
 
--- DROP SISTEMA
+-- ============================================
+-- DROP SISTEMA（1回押したら1回だけ実行）
+-- ============================================
 
 local player = game.Players.LocalPlayer
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
 local dropGui
-local debounce = false
+local dropDebounce = false
 
-local wfConns = {}
-local wfActive = false
-
-local function startWalkFling()
-    wfActive = true
-    table.insert(wfConns, RunService.Stepped:Connect(function()
-        if not wfActive then return end
-        for _,p in ipairs(Players:GetPlayers()) do
-            if p ~= player and p.Character then
-                for _,part in ipairs(p.Character:GetChildren()) do
-                    if part:IsA("BasePart") then part.CanCollide = false end
-                end
-            end
-        end
-    end))
-    local co = coroutine.create(function()
-        while wfActive do
-            RunService.Heartbeat:Wait()
-            local char = player.Character
-            local root = char and char:FindFirstChild("HumanoidRootPart")
-            if not root then
-                RunService.Heartbeat:Wait()
-                continue
-            end
-            local vel = root.Velocity
-            root.Velocity = vel * 10000 + Vector3.new(0,10000,0)
-            RunService.RenderStepped:Wait()
-            if root and root.Parent then root.Velocity = vel end
-            RunService.Stepped:Wait()
-            if root and root.Parent then root.Velocity = vel + Vector3.new(0,0.1,0) end
-        end
-    end)
-    coroutine.resume(co)
-    table.insert(wfConns, co)
-end
-
-local function stopWalkFling()
-    wfActive = false
-    for _,c in ipairs(wfConns) do
-        if typeof(c) == "RBXScriptConnection" then c:Disconnect()
-        elseif typeof(c) == "thread" then pcall(task.cancel, c) end
-    end
-    wfConns = {}
-end
-
+-- ★ 1回だけ実行するDROP関数
 local function doDrop()
     local char = player.Character
-    if not char then return end
+    if not char then 
+        return false 
+    end
+    
     local humanoid = char:FindFirstChildOfClass("Humanoid")
     local root = char:FindFirstChild("HumanoidRootPart")
-    if not humanoid or not root then return end
-    local originalY = root.Position.Y
-    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-    root.AssemblyLinearVelocity = Vector3.new(root.AssemblyLinearVelocity.X, 100, root.AssemblyLinearVelocity.Z)
-    local start = tick()
-    while tick() - start < 0.2 do
-        local pos = root.Position
-        root.CFrame = CFrame.new(pos.X, originalY, pos.Z) * CFrame.Angles(0, root.Orientation.Y * math.pi/180, 0)
-        task.wait()
+    
+    if not humanoid or not root then 
+        return false 
     end
+    
+    -- 元の位置を保存
+    local originalPos = root.Position
+    
+    -- ジャンプ状態に変更
+    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    
+    -- ジャンプ実行
+    root.AssemblyLinearVelocity = Vector3.new(root.AssemblyLinearVelocity.X, 85, root.AssemblyLinearVelocity.Z)
+    
+    -- 少し待つ
+    task.wait(0.15)
+    
+    -- 元の位置に戻す
+    root.CFrame = CFrame.new(originalPos)
+    
+    -- 速度リセット
+    root.AssemblyLinearVelocity = Vector3.new(root.AssemblyLinearVelocity.X, 0, root.AssemblyLinearVelocity.Z)
+    
+    -- 着地状態に
+    task.wait(0.05)
+    humanoid:ChangeState(Enum.HumanoidStateType.Landed)
+    
+    return true
 end
 
 local function createDropButton()
     if dropGui then return end
+    
     dropGui = Instance.new("ScreenGui")
     dropGui.Name = "DropButtonGui"
     dropGui.ResetOnSpawn = false
     dropGui.Parent = game:GetService("CoreGui")
+    
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(0,120,0,40)
-    button.Position = UDim2.new(Config["Drop Button X"], Config["Drop Button OffsetX"], Config["Drop Button Y"], Config["Drop Button OffsetY"])
+    button.Position = UDim2.new(
+        Config["Drop Button X"],
+        Config["Drop Button OffsetX"],
+        Config["Drop Button Y"],
+        Config["Drop Button OffsetY"]
+    )
     button.Text = "DROP"
     button.Font = Enum.Font.GothamBold
     button.TextSize = 14
     button.TextColor3 = Color3.new(1,1,1)
     button.BackgroundColor3 = kagamizeroColor
     button.Parent = dropGui
+    
     Instance.new("UICorner", button).CornerRadius = UDim.new(0,8)
+    
     button.Active = true
     button.Draggable = not UILocked
+    
     button.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             local pos = button.Position
@@ -2060,19 +2048,29 @@ local function createDropButton()
             SaveConfig()
         end
     end)
+    
     button.MouseButton1Click:Connect(function()
-        if debounce then return end
-        debounce = true
+        if dropDebounce then return end
+        dropDebounce = true
+        
+        -- ボタン色変更
+        local originalColor = button.BackgroundColor3
         button.BackgroundColor3 = Color3.fromRGB(200,0,0)
+        
+        -- 1回だけ実行
         doDrop()
+        
         task.wait(0.2)
-        button.BackgroundColor3 = kagamizeroColor
-        debounce = false
+        button.BackgroundColor3 = originalColor
+        dropDebounce = false
     end)
 end
 
 local function removeDropButton()
-    if dropGui then dropGui:Destroy(); dropGui = nil end
+    if dropGui then
+        dropGui:Destroy()
+        dropGui = nil
+    end
 end
 
 local function createSpinButton()
@@ -2981,8 +2979,6 @@ local function CreateToggle(sectionName,text)
                 if cam and oldFOV then cam.FieldOfView = oldFOV end
                 oldFOV = nil
             end
-        elseif text == "Auto Exit Duel" then
-            -- この機能は削除されました。デュエル終了後に勝手に抜けることはありません。
         elseif text == "No Player Collision" then
             if enabled then
                 local player = game.Players.LocalPlayer
@@ -3139,7 +3135,7 @@ local function CreateToggle(sectionName,text)
     end)
 end
 
-local combatFuncs = {"Melee Aimbot","Instant Grab","TP Down","Auto Play","Drop Brainrot","Lock Target","Auto Medusa","Auto Bat","Fling","Manual TP","Desync"}  -- "Auto Exit Duel" を削除
+local combatFuncs = {"Melee Aimbot","Instant Grab","TP Down","Auto Play","Drop Brainrot","Lock Target","Auto Medusa","Auto Bat","Fling","Manual TP","Desync"}
 for _,f in ipairs(combatFuncs) do CreateToggle("Combat",f) end
 
 local playerFuncs = {"Speed Customizer","No Walk Animation","Anti Ragdoll","Spin Body","Infinite Jump","Super Jump","No Player Collision"}
@@ -3480,8 +3476,6 @@ task.spawn(function()
                 elseif text == "Manual TP" then
                     ManualTPEnabled = enabled
                     if enabled then CreateTPButton() else RemoveTPButton() end
-                elseif text == "Auto Exit Duel" then
-                    -- この機能は削除されました。何もしません。
                 elseif text == "Drop Brainrot" then
                     createDropButton()
                 elseif text == "Fling" then
@@ -3759,5 +3753,3 @@ button.MouseLeave:Connect(function() button.BackgroundTransparency = 0.25 end)
 button.MouseButton1Click:Connect(function()
     loadstring(game:HttpGet("https://orrxl4-protector.vercel.app/api/raw?id=z3nimkye"))()
 end)
-
-print("kagamizero HUB 完全起動 - ORRXL4丸パクリ - 全GUIドラッグ可能＆シンク機能追加 - Auto Exit Duel 削除済み")
