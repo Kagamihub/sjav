@@ -201,9 +201,11 @@ local savedLighting = {}
 local optimized = {}
 local optimizerConnection
 
--- kagamizeroカラー (紫)
-local kagamizeroColor = Color3.fromRGB(156, 39, 176)
-local kagamizeroLight = Color3.fromRGB(186, 104, 200)
+-- 水色テーマ
+local kagamizeroColor = Color3.fromRGB(0, 150, 255)      -- メイン水色
+local kagamizeroLight = Color3.fromRGB(100, 200, 255)    -- 明るい水色
+local textColor = Color3.fromRGB(255, 255, 255)           -- 文字色は白
+local bgColor = Color3.fromRGB(0, 80, 160)                -- 背景色（濃い水色）
 
 -- 🔥 ANTI-LAG
 local function applyAntiLag(instance)
@@ -408,7 +410,7 @@ local espEnabled = false
 local function createESP(plr)
     if plr == lp then return end
     if not plr.Character then return end
-    if plr.Character:FindFirstChild("ESP_PURPLE") then return end
+    if plr.Character:FindFirstChild("ESP_WATER") then return end
 
     local char = plr.Character
     local hrp = char:FindFirstChild("HumanoidRootPart")
@@ -416,7 +418,7 @@ local function createESP(plr)
     if not (hrp and head) then return end
 
     local highlight = Instance.new("Highlight")
-    highlight.Name = "ESP_PURPLE"
+    highlight.Name = "ESP_WATER"
 
     highlight.FillColor = kagamizeroColor
     highlight.OutlineColor = kagamizeroLight
@@ -434,7 +436,7 @@ local function removeESP(plr)
 
     local char = plr.Character
 
-    local highlight = char:FindFirstChild("ESP_PURPLE")
+    local highlight = char:FindFirstChild("ESP_WATER")
     if highlight then highlight:Destroy() end
 end
 
@@ -632,7 +634,7 @@ function CreateTPButton()
     tpGui.Parent = game:GetService("CoreGui")
 
     local button = Instance.new("TextButton")
-    button.Size = UDim2.new(0,120,0,40)
+    button.Size = UDim2.new(0,100,0,35)
 
     button.Position = UDim2.new(
         Config["TP Button X"],
@@ -643,8 +645,8 @@ function CreateTPButton()
 
     button.Text = "TP"
     button.Font = Enum.Font.GothamBold
-    button.TextSize = 14
-    button.TextColor3 = Color3.new(1,1,1)
+    button.TextSize = 13
+    button.TextColor3 = textColor
     button.BackgroundColor3 = kagamizeroColor
     button.Parent = tpGui
 
@@ -676,7 +678,7 @@ function CreateTPButton()
         if debounce then return end
 
         debounce = true
-        button.BackgroundColor3 = Color3.fromRGB(200,0,0)
+        button.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
 
         doTP()
 
@@ -990,8 +992,8 @@ main.Position = UDim2.new(
     Config["AutoPlay GUI Y"],
     Config["AutoPlay GUI OffsetY"]
 )
-main.BackgroundColor3 = Color3.fromRGB(0,0,0)
-main.BackgroundTransparency = 0.35
+main.BackgroundColor3 = bgColor
+main.BackgroundTransparency = 0.2
 main.Parent = gui
 
 Instance.new("UICorner", main).CornerRadius = UDim.new(0,10)
@@ -1024,7 +1026,7 @@ playButton.Size = UDim2.new(0,180,0,34)
 playButton.Position = UDim2.new(0.5,-90,0,30)
 playButton.BackgroundColor3 = Color3.fromRGB(25,25,25)
 playButton.Text = "Play"
-playButton.TextColor3 = Color3.fromRGB(255,255,255)
+playButton.TextColor3 = textColor
 playButton.TextSize = 14
 playButton.Font = Enum.Font.GothamBold
 playButton.Parent = main
@@ -1043,7 +1045,7 @@ title.BackgroundTransparency = 1
 title.Text = "Auto Play"
 title.Font = Enum.Font.GothamBold
 title.TextSize = 15
-title.TextColor3 = kagamizeroColor
+title.TextColor3 = textColor
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = main
 
@@ -1054,7 +1056,7 @@ minimizeButton.BackgroundTransparency = 1
 minimizeButton.Text = "▲"
 minimizeButton.Font = Enum.Font.GothamBold
 minimizeButton.TextSize = 18
-minimizeButton.TextColor3 = kagamizeroColor
+minimizeButton.TextColor3 = textColor
 minimizeButton.Parent = main
 
 local pointElements = {}
@@ -1076,7 +1078,7 @@ local function createPoint(yPos, text, index)
     label.Text = text
     label.Font = Enum.Font.Gotham
     label.TextSize = 13
-    label.TextColor3 = Color3.fromRGB(255,255,255)
+    label.TextColor3 = textColor
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = frame
 
@@ -1085,7 +1087,7 @@ local function createPoint(yPos, text, index)
     box1.Position = UDim2.new(0.35,0,0,0)
     box1.BackgroundColor3 = Color3.fromRGB(25,25,25)
     box1.Text = tostring(Config["AutoPlay Point"..index.." Z"])
-    box1.TextColor3 = Color3.fromRGB(255,255,255)
+    box1.TextColor3 = textColor
     box1.Font = Enum.Font.Gotham
     box1.TextSize = 13
     box1.Parent = frame
@@ -1100,7 +1102,7 @@ local function createPoint(yPos, text, index)
     box2.Position = UDim2.new(0.7,0,0,0)
     box2.BackgroundColor3 = Color3.fromRGB(25,25,25)
     box2.Text = tostring(Config["AutoPlay Point"..index.." X"])
-    box2.TextColor3 = Color3.fromRGB(255,255,255)
+    box2.TextColor3 = textColor
     box2.Font = Enum.Font.Gotham
     box2.TextSize = 13
     box2.Parent = frame
@@ -1146,7 +1148,7 @@ local function createSetting(yPos, text, defaultValue)
     label.Text = text
     label.Font = Enum.Font.Gotham
     label.TextSize = 13
-    label.TextColor3 = Color3.fromRGB(255,255,255)
+    label.TextColor3 = textColor
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = frame
 
@@ -1155,7 +1157,7 @@ local function createSetting(yPos, text, defaultValue)
     box.Position = UDim2.new(0.55,0,0,0)
     box.BackgroundColor3 = Color3.fromRGB(25,25,25)
     box.Text = tostring(defaultValue or "")
-    box.TextColor3 = Color3.fromRGB(255,255,255)
+    box.TextColor3 = textColor
     box.Font = Enum.Font.Gotham
     box.TextSize = 13
     box.Parent = frame
@@ -1559,7 +1561,7 @@ function createDesyncButton()
     desyncGui.Parent = game:GetService("CoreGui")
     
     local button = Instance.new("TextButton")
-    button.Size = UDim2.new(0,120,0,40)
+    button.Size = UDim2.new(0,100,0,35)
     button.Position = UDim2.new(
         Config["Desync Button X"],
         Config["Desync Button OffsetX"],
@@ -1568,8 +1570,8 @@ function createDesyncButton()
     )
     button.Text = "シンク"
     button.Font = Enum.Font.GothamBold
-    button.TextSize = 14
-    button.TextColor3 = Color3.new(1,1,1)
+    button.TextSize = 13
+    button.TextColor3 = textColor
     button.BackgroundColor3 = kagamizeroColor
     button.Parent = desyncGui
     
@@ -1601,13 +1603,13 @@ function createDesyncButton()
             SaveConfig()
             enableDesync()
             button.Text = "シンク ON"
-            button.BackgroundColor3 = Color3.fromRGB(200,0,0)
+            button.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
         end
     end)
     
     if Config["Desync"] then
         button.Text = "シンク ON"
-        button.BackgroundColor3 = Color3.fromRGB(200,0,0)
+        button.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
     end
 end
 
@@ -1646,8 +1648,8 @@ gui.Parent = player:WaitForChild("PlayerGui")
 local main = Instance.new("Frame")
 main.Size = UDim2.new(0,200,0,185)
 main.Position = UDim2.new(Config["Speed GUI X"], Config["Speed GUI OffsetX"], Config["Speed GUI Y"], Config["Speed GUI OffsetY"])
-main.BackgroundColor3 = Color3.fromRGB(0,0,0)
-main.BackgroundTransparency = 0.35
+main.BackgroundColor3 = bgColor
+main.BackgroundTransparency = 0.2
 main.Parent = gui
 Instance.new("UICorner", main).CornerRadius = UDim.new(0,10)
 local stroke = Instance.new("UIStroke", main)
@@ -1680,7 +1682,7 @@ title.BackgroundTransparency = 1
 title.Text = "Speed Customizer"
 title.Font = Enum.Font.GothamBold
 title.TextSize = 15
-title.TextColor3 = kagamizeroColor
+title.TextColor3 = textColor
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = main
 
@@ -1692,7 +1694,7 @@ minimizeButton.Text = "▲"
 if minimized then minimizeButton.Text = "▼" else minimizeButton.Text = "▲" end
 minimizeButton.Font = Enum.Font.GothamBold
 minimizeButton.TextSize = 18
-minimizeButton.TextColor3 = title.TextColor3
+minimizeButton.TextColor3 = textColor
 minimizeButton.BorderSizePixel = 0
 minimizeButton.Parent = main
 
@@ -1700,7 +1702,7 @@ local activate = Instance.new("TextButton")
 activate.Size = UDim2.new(1,-20,0,30)
 activate.Position = UDim2.new(0,10,0,35)
 activate.BackgroundColor3 = Color3.fromRGB(25,25,25)
-activate.TextColor3 = Color3.fromRGB(255,255,255)
+activate.TextColor3 = textColor
 activate.Text = "OFF"
 activate.Font = Enum.Font.GothamBold
 activate.TextSize = 14
@@ -1717,7 +1719,7 @@ local function createRow(text,posY,default)
     label.Text = text
     label.Font = Enum.Font.GothamBold
     label.TextSize = 13
-    label.TextColor3 = Color3.fromRGB(255,255,255)
+    label.TextColor3 = textColor
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = main
 
@@ -1725,7 +1727,7 @@ local function createRow(text,posY,default)
     box.Size = UDim2.new(0.4,0,0,25)
     box.Position = UDim2.new(0.55,5,0,posY)
     box.BackgroundColor3 = Color3.fromRGB(20,20,20)
-    box.TextColor3 = Color3.fromRGB(255,255,255)
+    box.TextColor3 = textColor
     box.Text = tostring(default)
     box.Font = Enum.Font.GothamBold
     box.TextSize = 13
@@ -2033,7 +2035,7 @@ local function createDropButton()
     dropGui.Parent = game:GetService("CoreGui")
     
     local button = Instance.new("TextButton")
-    button.Size = UDim2.new(0,120,0,40)
+    button.Size = UDim2.new(0,100,0,35)
     button.Position = UDim2.new(
         Config["Drop Button X"],
         Config["Drop Button OffsetX"],
@@ -2042,8 +2044,8 @@ local function createDropButton()
     )
     button.Text = "DROP"
     button.Font = Enum.Font.GothamBold
-    button.TextSize = 14
-    button.TextColor3 = Color3.new(1,1,1)
+    button.TextSize = 13
+    button.TextColor3 = textColor
     button.BackgroundColor3 = kagamizeroColor
     button.Parent = dropGui
     
@@ -2069,7 +2071,7 @@ local function createDropButton()
         
         -- ボタン色変更
         local originalColor = button.BackgroundColor3
-        button.BackgroundColor3 = Color3.fromRGB(200,0,0)
+        button.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
         
         -- 1回だけ実行
         doDrop()
@@ -2093,12 +2095,12 @@ local function createSpinButton()
     spinGui.Name = "SpinButtonGui"
     spinGui.Parent = game:GetService("CoreGui")
     local button = Instance.new("TextButton")
-    button.Size = UDim2.new(0,120,0,40)
+    button.Size = UDim2.new(0,100,0,35)
     button.Position = UDim2.new(Config["Spin Button X"], Config["Spin Button OffsetX"], Config["Spin Button Y"], Config["Spin Button OffsetY"])
     button.Text = "SPIN"
     button.Font = Enum.Font.GothamBold
-    button.TextSize = 14
-    button.TextColor3 = Color3.new(1,1,1)
+    button.TextSize = 13
+    button.TextColor3 = textColor
     button.BackgroundColor3 = kagamizeroColor
     button.Parent = spinGui
     local corner = Instance.new("UICorner")
@@ -2119,8 +2121,8 @@ local function createSpinButton()
     button.MouseButton1Click:Connect(function()
         spinActive = not spinActive
         if spinActive then
-            button.Text = "SPINNING"
-            button.BackgroundColor3 = Color3.fromRGB(200,0,0)
+            button.Text = "SPIN"
+            button.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
             startSpinBody()
         else
             button.Text = "SPIN"
@@ -2143,12 +2145,12 @@ function createFlingGui()
     flingGui.ResetOnSpawn = false
     flingGui.Parent = game:GetService("CoreGui")
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0,120,0,40)
+    btn.Size = UDim2.new(0,100,0,35)
     btn.Position = UDim2.new(Config["Fling Button X"], Config["Fling Button OffsetX"], Config["Fling Button Y"], Config["Fling Button OffsetY"])
     btn.Text = "FLING"
     btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 14
-    btn.TextColor3 = Color3.new(1,1,1)
+    btn.TextSize = 13
+    btn.TextColor3 = textColor
     btn.BackgroundColor3 = kagamizeroColor
     btn.Parent = flingGui
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0,8)
@@ -2167,8 +2169,8 @@ function createFlingGui()
     btn.MouseButton1Click:Connect(function()
         flingActive = not flingActive
         if flingActive then
-            btn.Text = "FLING ON"
-            btn.BackgroundColor3 = Color3.fromRGB(200,0,0)
+            btn.Text = "FLING"
+            btn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
             startFling()
         else
             btn.Text = "FLING"
@@ -2224,10 +2226,10 @@ local grad = Instance.new("UIGradient")
 grad.Color = ColorSequence.new({
     ColorSequenceKeypoint.new(0, kagamizeroColor),
     ColorSequenceKeypoint.new(0.5, kagamizeroLight),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 64, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 200, 255)),
 })
 grad.Parent = progressFill
-progressFill.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
+progressFill.BackgroundColor3 = kagamizeroColor
 progressFill.Parent = barBg
 Instance.new("UICorner", progressFill).CornerRadius = UDim.new(0,4)
 
@@ -2236,7 +2238,7 @@ percentLabel.Size = UDim2.new(1,0,1,0)
 percentLabel.BackgroundTransparency = 1
 percentLabel.Font = Enum.Font.GothamBold
 percentLabel.TextSize = 11
-percentLabel.TextColor3 = Color3.fromRGB(255,255,255)
+percentLabel.TextColor3 = textColor
 percentLabel.Text = "0%"
 percentLabel.Visible = false
 percentLabel.Parent = progressShadow
@@ -2279,7 +2281,7 @@ end
 local topBar = Instance.new("Frame")
 topBar.Size = UDim2.new(0,240,0,32)
 topBar.Position = UDim2.new(0.5,-120,0,15)
-topBar.BackgroundColor3 = Color3.fromRGB(15,15,15)
+topBar.BackgroundColor3 = bgColor
 topBar.BackgroundTransparency = 0.15
 topBar.Parent = sg
 Instance.new("UICorner", topBar).CornerRadius = UDim.new(0,10)
@@ -2293,7 +2295,7 @@ topLabel.Size = UDim2.new(1,0,1,0)
 topLabel.BackgroundTransparency = 1
 topLabel.Font = Enum.Font.GothamBold
 topLabel.TextSize = 14
-topLabel.TextColor3 = kagamizeroColor
+topLabel.TextColor3 = textColor
 topLabel.Parent = topBar
 
 local fps, framesCount, last = 60, 0, tick()
@@ -2314,15 +2316,15 @@ RunService.RenderStepped:Connect(function()
 end)
 
 local toggleBtn = Instance.new("TextButton")
-toggleBtn.Size = UDim2.new(0,55,0,55)
+toggleBtn.Size = UDim2.new(0,45,0,45)
 toggleBtn.Position = UDim2.new(Config["Toggle Button X"], Config["Toggle Button OffsetX"], Config["Toggle Button Y"], Config["Toggle Button OffsetY"])
 toggleBtn.BackgroundColor3 = kagamizeroColor
 toggleBtn.Text = "零"
 toggleBtn.Font = Enum.Font.GothamBold
-toggleBtn.TextSize = 38
-toggleBtn.TextColor3 = Color3.new(1,1,1)
+toggleBtn.TextSize = 30
+toggleBtn.TextColor3 = textColor
 toggleBtn.Parent = sg
-Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0,14)
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0,12)
 toggleBtn.Active = true
 toggleBtn.Draggable = not UILocked
 
@@ -2340,8 +2342,8 @@ local HUB_HEIGHT = 320
 local hub = Instance.new("Frame")
 hub.Size = UDim2.new(0,HUB_WIDTH,0,HUB_HEIGHT)
 hub.Position = UDim2.new(0,-350,0.5,-HUB_HEIGHT/2)
-hub.BackgroundColor3 = Color3.fromRGB(0,0,0)
-hub.BackgroundTransparency = 0.25
+hub.BackgroundColor3 = bgColor
+hub.BackgroundTransparency = 0.2
 hub.Parent = sg
 Instance.new("UICorner", hub).CornerRadius = UDim.new(0,14)
 
@@ -2356,7 +2358,7 @@ title.BackgroundTransparency = 1
 title.Font = Enum.Font.GothamBold
 title.TextSize = 20
 title.TextXAlignment = Enum.TextXAlignment.Left
-title.TextColor3 = kagamizeroColor
+title.TextColor3 = textColor
 title.Text = "kagamizero HUB"
 title.Parent = hub
 
@@ -2544,12 +2546,12 @@ function createLockGui()
     lockGui.ResetOnSpawn = false
     lockGui.Parent = game:GetService("CoreGui")
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0,120,0,40)
+    btn.Size = UDim2.new(0,100,0,35)
     btn.Position = UDim2.new(Config["Lock Button X"], Config["Lock Button OffsetX"], Config["Lock Button Y"], Config["Lock Button OffsetY"])
     btn.Text = "LOCK"
     btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 14
-    btn.TextColor3 = Color3.new(1,1,1)
+    btn.TextSize = 13
+    btn.TextColor3 = textColor
     btn.BackgroundColor3 = kagamizeroColor
     btn.Parent = lockGui
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0,8)
@@ -2570,8 +2572,8 @@ function createLockGui()
         if #players <= 1 then warn("No hay jugadores en el servidor"); return end
         lockEnabled = not lockEnabled
         if lockEnabled then
-            btn.Text = "LOCKED"
-            btn.BackgroundColor3 = Color3.fromRGB(200,0,0)
+            btn.Text = "LOCK"
+            btn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
             startLock()
         else
             btn.Text = "LOCK"
@@ -2609,7 +2611,7 @@ local function InitMedusa()
         medusaPart.CanCollide = false
         medusaPart.Transparency = 0
         medusaPart.Material = Enum.Material.Neon
-        medusaPart.Color = Color3.fromRGB(255, 40, 40)
+        medusaPart.Color = kagamizeroColor
         medusaPart.Shape = Enum.PartType.Cylinder
         medusaPart.Size = Vector3.new(0.2, MEDUSA_RADIUS*2, MEDUSA_RADIUS*2)
         medusaPart.Parent = workspace
@@ -2695,12 +2697,12 @@ function CreateTPDownButton()
     tpDownGui.ResetOnSpawn = false
     tpDownGui.Parent = game:GetService("CoreGui")
     local button = Instance.new("TextButton")
-    button.Size = UDim2.new(0,120,0,40)
+    button.Size = UDim2.new(0,100,0,35)
     button.Position = UDim2.new(Config["TP Down Button X"], Config["TP Down Button OffsetX"], Config["TP Down Button Y"], Config["TP Down Button OffsetY"])
     button.Text = "TP DOWN"
     button.Font = Enum.Font.GothamBold
-    button.TextSize = 14
-    button.TextColor3 = Color3.new(1,1,1)
+    button.TextSize = 13
+    button.TextColor3 = textColor
     button.BackgroundColor3 = kagamizeroColor
     button.Parent = tpDownGui
     Instance.new("UICorner", button).CornerRadius = UDim.new(0,8)
@@ -2719,7 +2721,7 @@ function CreateTPDownButton()
     button.MouseButton1Click:Connect(function()
         if tpDownDebounce then return end
         tpDownDebounce = true
-        button.BackgroundColor3 = Color3.fromRGB(200,0,0)
+        button.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
         doTPDown()
         task.wait(0.2)
         button.BackgroundColor3 = kagamizeroColor
@@ -2782,7 +2784,7 @@ for i,v in ipairs(sections) do
     btn.Text = v
     btn.Font = Enum.Font.GothamBold
     btn.TextSize = 13
-    btn.TextColor3 = Color3.new(1,1,1)
+    btn.TextColor3 = textColor
     btn.Parent = hub
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
     Instance.new("UIStroke", btn).Color = kagamizeroColor
@@ -2795,7 +2797,7 @@ local function CreateToggle(sectionName,text)
     if text == "Radio Steal Nearest" and sectionName == "Settings" then
         local container = Instance.new("Frame")
         container.Size = UDim2.new(1,0,0,45)
-        container.BackgroundColor3 = Color3.fromRGB(15,15,15)
+        container.BackgroundColor3 = bgColor
         container.BackgroundTransparency = 0.2
         container.Parent = parentFrame
         Instance.new("UICorner", container).CornerRadius = UDim.new(0,10)
@@ -2806,7 +2808,7 @@ local function CreateToggle(sectionName,text)
         label.BackgroundTransparency = 1
         label.Font = Enum.Font.GothamBold
         label.TextSize = 14
-        label.TextColor3 = kagamizeroColor
+        label.TextColor3 = textColor
         label.TextXAlignment = Enum.TextXAlignment.Left
         label.Text = "Instant Grab Range"
         label.Parent = container
@@ -2815,7 +2817,7 @@ local function CreateToggle(sectionName,text)
         textbox.Size = UDim2.new(0,80,0,30)
         textbox.Position = UDim2.new(1,-90,0.5,-15)
         textbox.BackgroundColor3 = Color3.fromRGB(30,30,30)
-        textbox.TextColor3 = Color3.new(1,1,1)
+        textbox.TextColor3 = textColor
         textbox.Font = Enum.Font.Gotham
         textbox.TextSize = 14
         textbox.Text = tostring(grabRadius)
@@ -2838,7 +2840,7 @@ local function CreateToggle(sectionName,text)
     end
     local container = Instance.new("Frame")
     container.Size = UDim2.new(1,0,0,45)
-    container.BackgroundColor3 = Color3.fromRGB(15,15,15)
+    container.BackgroundColor3 = bgColor
     container.BackgroundTransparency = 0.2
     container.Parent = parentFrame
     Instance.new("UICorner", container).CornerRadius = UDim.new(0,10)
@@ -2849,7 +2851,7 @@ local function CreateToggle(sectionName,text)
     label.BackgroundTransparency = 1
     label.Font = Enum.Font.GothamBold
     label.TextSize = 14
-    label.TextColor3 = kagamizeroColor
+    label.TextColor3 = textColor
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Text = text
     label.Parent = container
@@ -3165,7 +3167,7 @@ do
     local parentFrame = frames["Settings"]
     local container = Instance.new("Frame")
     container.Size = UDim2.new(1,0,0,45)
-    container.BackgroundColor3 = Color3.fromRGB(15,15,15)
+    container.BackgroundColor3 = bgColor
     container.BackgroundTransparency = 0.2
     container.Parent = parentFrame
     Instance.new("UICorner", container).CornerRadius = UDim.new(0,10)
@@ -3176,7 +3178,7 @@ do
     label.BackgroundTransparency = 1
     label.Font = Enum.Font.GothamBold
     label.TextSize = 14
-    label.TextColor3 = kagamizeroColor
+    label.TextColor3 = textColor
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Text = "Lock Target Range"
     label.Parent = container
@@ -3184,7 +3186,7 @@ do
     textbox.Size = UDim2.new(0,80,0,30)
     textbox.Position = UDim2.new(1,-90,0.5,-15)
     textbox.BackgroundColor3 = Color3.fromRGB(30,30,30)
-    textbox.TextColor3 = Color3.new(1,1,1)
+    textbox.TextColor3 = textColor
     textbox.Font = Enum.Font.Gotham
     textbox.TextSize = 14
     textbox.Text = tostring(LOCK_RADIUS)
@@ -3205,7 +3207,7 @@ do
     local parentFrame = frames["Settings"]
     local container = Instance.new("Frame")
     container.Size = UDim2.new(1,0,0,45)
-    container.BackgroundColor3 = Color3.fromRGB(15,15,15)
+    container.BackgroundColor3 = bgColor
     container.BackgroundTransparency = 0.2
     container.Parent = parentFrame
     Instance.new("UICorner", container).CornerRadius = UDim.new(0,10)
@@ -3216,7 +3218,7 @@ do
     label.BackgroundTransparency = 1
     label.Font = Enum.Font.GothamBold
     label.TextSize = 14
-    label.TextColor3 = kagamizeroColor
+    label.TextColor3 = textColor
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Text = "Auto Medusa Range"
     label.Parent = container
@@ -3224,7 +3226,7 @@ do
     textbox.Size = UDim2.new(0,80,0,30)
     textbox.Position = UDim2.new(1,-90,0.5,-15)
     textbox.BackgroundColor3 = Color3.fromRGB(30,30,30)
-    textbox.TextColor3 = Color3.new(1,1,1)
+    textbox.TextColor3 = textColor
     textbox.Font = Enum.Font.Gotham
     textbox.TextSize = 14
     textbox.Text = tostring(MEDUSA_RADIUS)
@@ -3249,7 +3251,7 @@ do
     local parentFrame = frames["Settings"]
     local container = Instance.new("Frame")
     container.Size = UDim2.new(1,0,0,45)
-    container.BackgroundColor3 = Color3.fromRGB(15,15,15)
+    container.BackgroundColor3 = bgColor
     container.BackgroundTransparency = 0.2
     container.Parent = parentFrame
     Instance.new("UICorner", container).CornerRadius = UDim.new(0,10)
@@ -3260,7 +3262,7 @@ do
     label.BackgroundTransparency = 1
     label.Font = Enum.Font.GothamBold
     label.TextSize = 14
-    label.TextColor3 = kagamizeroColor
+    label.TextColor3 = textColor
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Text = "Spin Speed"
     label.Parent = container
@@ -3268,7 +3270,7 @@ do
     textbox.Size = UDim2.new(0,80,0,30)
     textbox.Position = UDim2.new(1,-90,0.5,-15)
     textbox.BackgroundColor3 = Color3.fromRGB(30,30,30)
-    textbox.TextColor3 = Color3.new(1,1,1)
+    textbox.TextColor3 = textColor
     textbox.Font = Enum.Font.Gotham
     textbox.TextSize = 14
     textbox.Text = tostring(Config["Spin Speed"] or 30)
@@ -3286,7 +3288,7 @@ do
     local parentFrame = frames["Settings"]
     local container = Instance.new("Frame")
     container.Size = UDim2.new(1,0,0,45)
-    container.BackgroundColor3 = Color3.fromRGB(15,15,15)
+    container.BackgroundColor3 = bgColor
     container.BackgroundTransparency = 0.2
     container.Parent = parentFrame
     Instance.new("UICorner", container).CornerRadius = UDim.new(0,10)
@@ -3297,7 +3299,7 @@ do
     label.BackgroundTransparency = 1
     label.Font = Enum.Font.GothamBold
     label.TextSize = 14
-    label.TextColor3 = kagamizeroColor
+    label.TextColor3 = textColor
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Text = "Melee Aimbot Range"
     label.Parent = container
@@ -3305,7 +3307,7 @@ do
     textbox.Size = UDim2.new(0,80,0,30)
     textbox.Position = UDim2.new(1,-90,0.5,-15)
     textbox.BackgroundColor3 = Color3.fromRGB(30,30,30)
-    textbox.TextColor3 = Color3.new(1,1,1)
+    textbox.TextColor3 = textColor
     textbox.Font = Enum.Font.Gotham
     textbox.TextSize = 14
     textbox.Text = tostring(MELEE_RANGE)
@@ -3325,7 +3327,7 @@ do
     local parentFrame = frames["Settings"]
     local container = Instance.new("Frame")
     container.Size = UDim2.new(1,0,0,45)
-    container.BackgroundColor3 = Color3.fromRGB(15,15,15)
+    container.BackgroundColor3 = bgColor
     container.BackgroundTransparency = 0.2
     container.Parent = parentFrame
     Instance.new("UICorner", container).CornerRadius = UDim.new(0,10)
@@ -3336,7 +3338,7 @@ do
     label.BackgroundTransparency = 1
     label.Font = Enum.Font.GothamBold
     label.TextSize = 14
-    label.TextColor3 = kagamizeroColor
+    label.TextColor3 = textColor
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Text = "FOV"
     label.Parent = container
@@ -3344,7 +3346,7 @@ do
     textbox.Size = UDim2.new(0,80,0,30)
     textbox.Position = UDim2.new(1,-90,0.5,-15)
     textbox.BackgroundColor3 = Color3.fromRGB(30,30,30)
-    textbox.TextColor3 = Color3.new(1,1,1)
+    textbox.TextColor3 = textColor
     textbox.Font = Enum.Font.Gotham
     textbox.TextSize = 14
     textbox.Text = tostring(Config["FOV Value"])
@@ -3647,12 +3649,12 @@ task.spawn(function()
     tauntGui.ResetOnSpawn = false
     tauntGui.Parent = game:GetService("CoreGui")
     local button = Instance.new("TextButton")
-    button.Size = UDim2.new(0,120,0,40)
+    button.Size = UDim2.new(0,100,0,35)
     button.Position = UDim2.new(0.500, -483, 0.500, -190)
     button.Text = "TAUNT"
     button.Font = Enum.Font.GothamBold
-    button.TextSize = 14
-    button.TextColor3 = Color3.new(1,1,1)
+    button.TextSize = 13
+    button.TextColor3 = textColor
     button.BackgroundColor3 = kagamizeroColor
     button.Parent = tauntGui
     Instance.new("UICorner", button).CornerRadius = UDim.new(0,8)
@@ -3663,7 +3665,7 @@ task.spawn(function()
         tauntActive = not tauntActive
         if tauntActive then
             button.Text = "TAUNT"
-            button.BackgroundColor3 = Color3.fromRGB(200,0,0)
+            button.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
             task.spawn(function()
                 while tauntActive do
                     sendMessage("/kagamizero On Top")
