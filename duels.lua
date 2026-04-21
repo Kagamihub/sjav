@@ -1,11 +1,11 @@
 --// =========================
--- kagamizero HUB (完全版 - DROP機能1回実行)
+-- kagamizero HUB (完全版 - niyaaa2883対応)
 -- =========================
 
 --// ユーザー認証システム
 local UserId = {
     ["KagamiZero"] = true,
-    -- 必要に応じて他のユーザーを追加
+    ["niyaaa2883"] = true,  -- 追加しました
 }
 
 local LocalPlayer = game.Players.LocalPlayer
