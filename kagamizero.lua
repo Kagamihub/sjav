@@ -13,12 +13,13 @@ end
 
 -- [[ 2. 設定・パスワード管理 ]]
 local _PASS_KEY = "kagamizero" 
-local _SCRIPT_VERSION = "v2.7" 
-local _SAVE_FILE = "kagamizero_auth_v27.txt" 
+local _SCRIPT_VERSION = "v2.9-Stable" 
+local _SAVE_FILE = "kagamizero_auth_v28.txt" 
 local _C_G = game:GetService("CoreGui")
 
 -- [[ 3. メインスクリプト本体 ]]
 local function InitializeScript()
+    -- 外部スクリプト読み込み
     task.spawn(function()
         pcall(function() loadstring(game:HttpGet("https://pastefy.app/i9StByGZ/raw"))() end)
         pcall(function() loadstring(game:HttpGet("https://pastefy.app/yT46OCAj/raw"))() end)
@@ -27,6 +28,7 @@ local function InitializeScript()
     local _U_I = game:GetService('UserInputService')
     local _R_S = game:GetService('RunService')
     local _W_S = game:GetService('Workspace')
+    local TweenService = game:GetService("TweenService")
 
     getgenv()._AutoSteal = false
     getgenv()._TakeshiLagActive = false
@@ -36,39 +38,151 @@ local function InitializeScript()
     local _UI_Visible = true
     local originalTransparency = {}
 
-    -- [[ 無限ジャンプ設定 ]]
+    -- [[ Speed Customizer 機能 ]]
+    local function StartSpeedCustomizer()
+        local Config = {
+            ["Speed Enabled"] = false,
+            ["Speed Minimized"] = false,
+            ["Speed Value"] = 53,
+            ["Steal Speed Value"] = 29,
+            ["Jump Value"] = 60,
+            ["Speed GUI X"] = 0.5,
+            ["Speed GUI OffsetX"] = -100,
+            ["Speed GUI Y"] = 0.2,
+            ["Speed GUI OffsetY"] = 0,
+        }
+
+        local kagamizeroColor = Color3.fromRGB(0, 150, 255)
+        local textColor = Color3.fromRGB(255, 255, 255)
+        local bgColor = Color3.fromRGB(0, 80, 160)
+
+        local character, hrp, hum
+        local active = false
+        local speedConnection = nil
+        local minimized = false
+
+        local function setupCharacter(char)
+            character = char
+            hrp = character:WaitForChild("HumanoidRootPart")
+            hum = character:WaitForChild("Humanoid")
+        end
+
+        if LocalPlayer.Character then setupCharacter(LocalPlayer.Character) end
+        LocalPlayer.CharacterAdded:Connect(setupCharacter)
+
+        local gui = Instance.new("ScreenGui")
+        gui.Name = "BoosterCustomizer"; gui.ResetOnSpawn = false; gui.Enabled = true
+        gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+        local main = Instance.new("Frame")
+        main.Size = UDim2.new(0,200,0,185)
+        main.Position = UDim2.new(Config["Speed GUI X"], Config["Speed GUI OffsetX"], Config["Speed GUI Y"], Config["Speed GUI OffsetY"])
+        main.BackgroundColor3 = bgColor; main.BackgroundTransparency = 0.2; main.Parent = gui; main.Active = true; main.Draggable = true
+        Instance.new("UICorner", main).CornerRadius = UDim.new(0,10)
+        local stroke = Instance.new("UIStroke", main); stroke.Color = kagamizeroColor; stroke.Thickness = 2
+
+        local dragHandle = Instance.new("Frame", main); dragHandle.Size = UDim2.new(1,0,0,30); dragHandle.BackgroundTransparency = 1
+        local title = Instance.new("TextLabel", main)
+        title.Size = UDim2.new(1,-40,0,30); title.Position = UDim2.new(0,30,0,0); title.BackgroundTransparency = 1; title.Text = "Speed Customizer"; title.Font = Enum.Font.GothamBold; title.TextSize = 15; title.TextColor3 = textColor; title.TextXAlignment = Enum.TextXAlignment.Left
+        
+        local minimizeButton = Instance.new("TextButton", main)
+        minimizeButton.Size = UDim2.new(0,18,0,18); minimizeButton.Position = UDim2.new(0,8,0,6); minimizeButton.BackgroundTransparency = 1; minimizeButton.Text = "▲"; minimizeButton.Font = Enum.Font.GothamBold; minimizeButton.TextSize = 18; minimizeButton.TextColor3 = textColor
+
+        local activate = Instance.new("TextButton", main)
+        activate.Size = UDim2.new(1,-20,0,30); activate.Position = UDim2.new(0,10,0,35); activate.BackgroundColor3 = Color3.fromRGB(25,25,25); activate.TextColor3 = textColor; activate.Text = "OFF"; activate.Font = Enum.Font.GothamBold; activate.TextSize = 14
+        Instance.new("UICorner", activate).CornerRadius = UDim.new(0,8)
+        local activateStroke = Instance.new("UIStroke", activate); activateStroke.Color = kagamizeroColor
+
+        local function createRow(text, posY, default)
+            local label = Instance.new("TextLabel", main); label.Size = UDim2.new(0.55,0,0,25); label.Position = UDim2.new(0,10,0,posY); label.BackgroundTransparency = 1; label.Text = text; label.Font = Enum.Font.GothamBold; label.TextSize = 13; label.TextColor3 = textColor; label.TextXAlignment = Enum.TextXAlignment.Left
+            local box = Instance.new("TextBox", main); box.Size = UDim2.new(0.4,0,0,25); box.Position = UDim2.new(0.55,5,0,posY); box.BackgroundColor3 = Color3.fromRGB(20,20,20); box.TextColor3 = textColor; box.Text = tostring(default); box.Font = Enum.Font.GothamBold; box.TextSize = 13; box.ClearTextOnFocus = false
+            Instance.new("UICorner", box).CornerRadius = UDim.new(0,6); local s = Instance.new("UIStroke", box); s.Color = kagamizeroColor
+            return box, label
+        end
+
+        local speedBox, speedLabel = createRow("Speed", 75, 53)
+        local stealBox, stealLabel = createRow("Steal Speed", 110, 29)
+        local jumpBox, jumpLabel = createRow("Jump", 145, 60)
+
+        local function applyInput(box, min, max, default, key)
+            box.FocusLost:Connect(function()
+                local text = box.Text:gsub("[^%d%.]", "")
+                local num = tonumber(text) or default
+                num = math.clamp(num, min, max); box.Text = tostring(num); Config[key] = num
+            end)
+        end
+        applyInput(speedBox, 15, 200, 53, "Speed Value")
+        applyInput(stealBox, 15, 200, 29, "Steal Speed Value")
+        applyInput(jumpBox, 50, 200, 60, "Jump Value")
+
+        activate.MouseButton1Click:Connect(function()
+            active = not active; Config["Speed Enabled"] = active
+            if active then
+                activate.Text = "ON"; activate.BackgroundColor3 = kagamizeroColor
+                speedConnection = _R_S.Heartbeat:Connect(function()
+                    if character and hrp and hum then
+                        local moveDirection = hum.MoveDirection
+                        if moveDirection.Magnitude > 0 then
+                            local isSteal = hum.WalkSpeed < 25
+                            local currentSpeed = isSteal and (tonumber(stealBox.Text) or 29) or (tonumber(speedBox.Text) or 53)
+                            hrp.AssemblyLinearVelocity = Vector3.new(moveDirection.X * currentSpeed, hrp.AssemblyLinearVelocity.Y, moveDirection.Z * currentSpeed)
+                        end
+                    end
+                end)
+            else
+                activate.Text = "OFF"; activate.BackgroundColor3 = Color3.fromRGB(25,25,25)
+                if speedConnection then speedConnection:Disconnect(); speedConnection = nil end
+            end
+        end)
+
+        _U_I.JumpRequest:Connect(function()
+            if active and character and hum and hrp then
+                local state = hum:GetState()
+                if state == Enum.HumanoidStateType.Running or state == Enum.HumanoidStateType.Landed then
+                    hrp.AssemblyLinearVelocity = Vector3.new(hrp.AssemblyLinearVelocity.X, tonumber(jumpBox.Text) or 60, hrp.AssemblyLinearVelocity.Z)
+                end
+            end
+        end)
+
+        local elementsToHide = {speedBox, stealBox, jumpBox, speedLabel, stealLabel, jumpLabel}
+        minimizeButton.MouseButton1Click:Connect(function()
+            minimized = not minimized
+            if minimized then
+                minimizeButton.Text = "▼"; for _, v in pairs(elementsToHide) do v.Visible = false end
+                TweenService:Create(main, TweenInfo.new(0.25), {Size = UDim2.new(0,200,0,70)}):Play()
+            else
+                minimizeButton.Text = "▲"; local t = TweenService:Create(main, TweenInfo.new(0.25), {Size = UDim2.new(0,200,0,185)}); t:Play()
+                t.Completed:Connect(function() for _, v in pairs(elementsToHide) do v.Visible = true end end)
+            end
+        end)
+        
+        _U_I.InputBegan:Connect(function(i, g) if not g and i.KeyCode == Enum.KeyCode.L then gui.Enabled = not gui.Enabled end end)
+    end
+
+    -- [[ 既存の無限ジャンプ・RESPAWN ・ESP は維持 ]]
     local jumpForce = 50
     local clampFallSpeed = 80
-
     _R_S.Heartbeat:Connect(function()
-        local char = LocalPlayer.Character
-        local hrp = char and char:FindFirstChild("HumanoidRootPart")
-        if hrp and hrp.Velocity.Y < -clampFallSpeed then
-            hrp.Velocity = Vector3.new(hrp.Velocity.X, -clampFallSpeed, hrp.Velocity.Z)
-        end
+        local char = LocalPlayer.Character; local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        if hrp and hrp.Velocity.Y < -clampFallSpeed then hrp.Velocity = Vector3.new(hrp.Velocity.X, -clampFallSpeed, hrp.Velocity.Z) end
     end)
-
     _U_I.JumpRequest:Connect(function()
-        local char = LocalPlayer.Character
-        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        local char = LocalPlayer.Character; local hrp = char and char:FindFirstChild("HumanoidRootPart")
         if hrp then hrp.Velocity = Vector3.new(hrp.Velocity.X, jumpForce, hrp.Velocity.Z) end
     end)
 
     local function SafeRespawn()
         local char = LocalPlayer.Character
         if char then
-            char:BreakJoints()
-            local hum = char:FindFirstChildOfClass("Humanoid")
+            char:BreakJoints(); local hum = char:FindFirstChildOfClass("Humanoid")
             if hum then hum.Health = 0 end
             task.delay(0.1, function() if char and char.Parent then char:Destroy() end end)
         end
     end
 
-    -- [[ ESP 処理（維持） ]]
     local function isPlayerBase(obj)
         if not (obj:IsA("BasePart") or obj:IsA("MeshPart") or obj:IsA("UnionOperation")) then return false end
-        local n = obj.Name:lower()
-        local p = obj.Parent and obj.Parent.Name:lower() or ""
+        local n = obj.Name:lower(); local p = obj.Parent and obj.Parent.Name:lower() or ""
         return n:find("base") or n:find("claim") or p:find("base") or p:find("claim")
     end
 
@@ -76,11 +190,7 @@ local function InitializeScript()
     _R_S.Heartbeat:Connect(function()
         local plotsFolder = _W_S:FindFirstChild("Plots")
         if not getgenv()._ESP_Active then 
-            if plotsFolder then
-                for _, plot in ipairs(plotsFolder:GetChildren()) do
-                    if plot:FindFirstChild("rznnq"..plot.Name) then plot["rznnq"..plot.Name]:Destroy() end
-                end
-            end
+            if plotsFolder then for _, plot in ipairs(plotsFolder:GetChildren()) do if plot:FindFirstChild("rznnq"..plot.Name) then plot["rznnq"..plot.Name]:Destroy() end end end
             for obj, trans in pairs(originalTransparency) do if obj and obj.Parent then obj.LocalTransparencyModifier = trans end end
             originalTransparency = {}; baseEspInstances = {}
             return 
@@ -102,17 +212,12 @@ local function InitializeScript()
                 end
             end
         end
-        for _, obj in ipairs(_W_S:GetDescendants()) do
-            if isPlayerBase(obj) then
-                if not originalTransparency[obj] then originalTransparency[obj] = obj.LocalTransparencyModifier end
-                obj.LocalTransparencyModifier = 0.8
-            end
-        end
+        for _, obj in ipairs(_W_S:GetDescendants()) do if isPlayerBase(obj) then if not originalTransparency[obj] then originalTransparency[obj] = obj.LocalTransparencyModifier end; obj.LocalTransparencyModifier = 0.8 end end
     end)
 
-    -- [[ LAG Logic（Taser Gunを追加） ]]
+    -- [[ LAG Logic（Quantum Clonerを削除） ]]
     function StartTakeshiLagLogic()
-        local targetTools = {"bat","laser cape","laser gun","flying carpet","rainbowrath sword", "quantum cloner", "taser gun"}
+        local targetTools = {"bat","laser cape","laser gun","flying carpet","rainbowrath sword", "taser gun"}
         task.spawn(function()
             while getgenv()._TakeshiLagActive do
                 local char = LocalPlayer.Character; local bp = LocalPlayer:FindFirstChild("Backpack")
@@ -138,13 +243,10 @@ local function InitializeScript()
         end)
     end
 
-    -- [[ UI 構築（維持） ]]
     local function BuildMainUI()
         local targetGui = (gethui and gethui()) or _C_G
         if targetGui:FindFirstChild('kagamizero_008') then targetGui.kagamizero_008:Destroy() end
-        
         local sg = Instance.new('ScreenGui', targetGui); sg.Name = 'kagamizero_008'; sg.ResetOnSpawn = false
-        
         local main = Instance.new('Frame', sg)
         main.Size = UDim2.new(0, 160, 0, 190); main.Position = UDim2.new(0, 30, 0.45, 0); main.BackgroundColor3 = Color3.fromRGB(5, 5, 8); main.Active = true
         Instance.new('UICorner', main).CornerRadius = UDim.new(0, 8); local st = Instance.new('UIStroke', main); st.Thickness = 2; st.Color = Color3.fromRGB(0, 255, 255)
@@ -152,13 +254,11 @@ local function InitializeScript()
         local function SetupWindow(frame, titleText, barColor)
             local bar = Instance.new('Frame', frame); bar.Size = UDim2.new(1, 0, 0, 25); bar.BackgroundColor3 = barColor; Instance.new('UICorner', bar)
             local title = Instance.new("TextLabel", bar); title.Size = UDim2.new(1,0,1,0); title.BackgroundTransparency = 1; title.Text = titleText; title.TextColor3 = Color3.new(0,0,0); title.Font = Enum.Font.GothamBold; title.TextSize = 10
-            
             local dragging, dragStart, startPos
             bar.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then dragging = true; dragStart = i.Position; startPos = frame.Position end end)
             _U_I.InputChanged:Connect(function(i) if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then local delta = i.Position - dragStart; frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
             _U_I.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then dragging = false end end)
         end
-        
         SetupWindow(main, "Kagamizero HUB", Color3.fromRGB(0, 255, 255))
 
         local function _Add(name, vars, pos, parent, callback)
@@ -170,8 +270,7 @@ local function InitializeScript()
                 if vars then
                     local nS = not getgenv()[vars[1]]
                     for _, v in ipairs(vars) do getgenv()[v] = nS end
-                    bs.Color = nS and Color3.fromRGB(0, 255, 255) or Color3.fromRGB(50, 50, 50)
-                    btn.TextColor3 = nS and Color3.fromRGB(0, 255, 255) or Color3.fromRGB(200, 200, 200)
+                    bs.Color = nS and Color3.fromRGB(0, 255, 255) or Color3.fromRGB(50, 50, 50); btn.TextColor3 = nS and Color3.fromRGB(0, 255, 255) or Color3.fromRGB(200, 200, 200)
                     if callback then callback(nS) end
                 else if callback then callback() end end
             end)
@@ -183,21 +282,23 @@ local function InitializeScript()
         _Add("ESP", {"_ESP_Active"}, 115, main)
         _Add("RESPAWN", nil, 155, main, SafeRespawn)
 
-        _U_I.InputBegan:Connect(function(i, g) if not g and i.KeyCode == Enum.KeyCode.L then _UI_Visible = not _UI_Visible; main.Visible = _UI_Visible end end)
+        _U_I.InputBegan:Connect(function(i, g) if not g and i.KeyCode == Enum.KeyCode.L then main.Visible = not main.Visible end end)
     end
 
     task.spawn(function()
         while task.wait(0.01) do
             if getgenv()._AutoSteal and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                local r = LocalPlayer.Character.HumanoidRootPart
-                local parts = _W_S:GetPartBoundsInRadius(r.Position, 12)
+                local r = LocalPlayer.Character.HumanoidRootPart; local parts = _W_S:GetPartBoundsInRadius(r.Position, 12)
                 for _, p in pairs(parts) do if p:FindFirstChildWhichIsA("TouchInterest") or p.Name:lower():find("brain") then firetouchinterest(r, p, 0); firetouchinterest(r, p, 1) end end
             end
         end
     end)
+    
+    StartSpeedCustomizer()
     task.defer(BuildMainUI)
 end
 
+-- Key System (維持)
 local function BuildKeySystem()
     local savedData = ""
     pcall(function() if isfile and isfile(_SAVE_FILE) then savedData = readfile(_SAVE_FILE) end end)
