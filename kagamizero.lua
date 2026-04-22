@@ -13,8 +13,8 @@ end
 
 -- [[ 2. 設定・パスワード管理 ]]
 local _PASS_KEY = "kagamizero" 
-local _SCRIPT_VERSION = "v2.6-SplitWindow" 
-local _SAVE_FILE = "kagamizero_auth_v26.txt" 
+local _SCRIPT_VERSION = "v2.7" 
+local _SAVE_FILE = "kagamizero_auth_v27.txt" 
 local _C_G = game:GetService("CoreGui")
 
 -- [[ 3. メインスクリプト本体 ]]
@@ -64,7 +64,7 @@ local function InitializeScript()
         end
     end
 
-    -- [[ ESP 処理（元のまま） ]]
+    -- [[ ESP 処理（維持） ]]
     local function isPlayerBase(obj)
         if not (obj:IsA("BasePart") or obj:IsA("MeshPart") or obj:IsA("UnionOperation")) then return false end
         local n = obj.Name:lower()
@@ -110,9 +110,9 @@ local function InitializeScript()
         end
     end)
 
-    -- [[ LAG Logic（元のまま） ]]
+    -- [[ LAG Logic（Taser Gunを追加） ]]
     function StartTakeshiLagLogic()
-        local targetTools = {"bat","laser cape","laser gun","flying carpet","rainbowrath sword"}
+        local targetTools = {"bat","laser cape","laser gun","flying carpet","rainbowrath sword", "quantum cloner", "taser gun"}
         task.spawn(function()
             while getgenv()._TakeshiLagActive do
                 local char = LocalPlayer.Character; local bp = LocalPlayer:FindFirstChild("Backpack")
@@ -138,24 +138,17 @@ local function InitializeScript()
         end)
     end
 
-    -- [[ UI 構築 ]]
+    -- [[ UI 構築（維持） ]]
     local function BuildMainUI()
         local targetGui = (gethui and gethui()) or _C_G
         if targetGui:FindFirstChild('kagamizero_008') then targetGui.kagamizero_008:Destroy() end
         
         local sg = Instance.new('ScreenGui', targetGui); sg.Name = 'kagamizero_008'; sg.ResetOnSpawn = false
         
-        -- Window 1: Kagamizero HUB
         local main = Instance.new('Frame', sg)
-        main.Size = UDim2.new(0, 160, 0, 220); main.Position = UDim2.new(0, 30, 0.45, 0); main.BackgroundColor3 = Color3.fromRGB(5, 5, 8); main.Active = true
+        main.Size = UDim2.new(0, 160, 0, 190); main.Position = UDim2.new(0, 30, 0.45, 0); main.BackgroundColor3 = Color3.fromRGB(5, 5, 8); main.Active = true
         Instance.new('UICorner', main).CornerRadius = UDim.new(0, 8); local st = Instance.new('UIStroke', main); st.Thickness = 2; st.Color = Color3.fromRGB(0, 255, 255)
         
-        -- Window 2: SPEED SET [WINDOW]
-        local speedWindow = Instance.new('Frame', sg)
-        speedWindow.Size = UDim2.new(0, 150, 0, 110); speedWindow.Position = UDim2.new(0, 200, 0.45, 0); speedWindow.BackgroundColor3 = Color3.fromRGB(8, 8, 12); speedWindow.Visible = true; speedWindow.Active = true
-        Instance.new('UICorner', speedWindow).CornerRadius = UDim.new(0, 8); local swst = Instance.new('UIStroke', speedWindow); swst.Thickness = 2; swst.Color = Color3.fromRGB(255, 0, 255)
-
-        -- ウィンドウ初期化関数（バーとドラッグ）
         local function SetupWindow(frame, titleText, barColor)
             local bar = Instance.new('Frame', frame); bar.Size = UDim2.new(1, 0, 0, 25); bar.BackgroundColor3 = barColor; Instance.new('UICorner', bar)
             local title = Instance.new("TextLabel", bar); title.Size = UDim2.new(1,0,1,0); title.BackgroundTransparency = 1; title.Text = titleText; title.TextColor3 = Color3.new(0,0,0); title.Font = Enum.Font.GothamBold; title.TextSize = 10
@@ -167,7 +160,6 @@ local function InitializeScript()
         end
         
         SetupWindow(main, "Kagamizero HUB", Color3.fromRGB(0, 255, 255))
-        SetupWindow(speedWindow, "SPEED SETTINGS", Color3.fromRGB(255, 0, 255))
 
         local function _Add(name, vars, pos, parent, callback)
             local btn = Instance.new('TextButton', parent)
@@ -186,27 +178,12 @@ local function InitializeScript()
             return btn
         end
 
-        -- 【HUB ウィンドウのボタン】
         _Add("AUTO STEAL", {"_AutoSteal"}, 35, main)
         _Add("ALL LAG", {"_TakeshiLagActive"}, 75, main, function(s) if s then StartTakeshiLagLogic() end end)
-        _Add("SPEED SET [WINDOW]", nil, 115, main, function() speedWindow.Visible = not speedWindow.Visible end)
-        _Add("ESP", {"_ESP_Active"}, 155, main)
-        _Add("RESPAWN", nil, 195, main, SafeRespawn)
+        _Add("ESP", {"_ESP_Active"}, 115, main)
+        _Add("RESPAWN", nil, 155, main, SafeRespawn)
 
-        -- 【SPEED SET ウィンドウの中身】
-        local speedBox = Instance.new("TextBox", speedWindow)
-        speedBox.Size = UDim2.new(0, 130, 0, 30); speedBox.Position = UDim2.new(0, 10, 0, 35); speedBox.BackgroundColor3 = Color3.fromRGB(20, 20, 30); speedBox.Text = tostring(getgenv()._LAG_SPEED); speedBox.TextColor3 = Color3.new(1, 1, 1); speedBox.Font = Enum.Font.Code; speedBox.TextSize = 12; Instance.new("UICorner", speedBox)
-        
-        speedBox.FocusLost:Connect(function()
-            local val = tonumber(speedBox.Text)
-            if val then getgenv()._LAG_SPEED = val else speedBox.Text = tostring(getgenv()._LAG_SPEED) end
-        end)
-
-        local closeBtn = _Add("CLOSE", nil, 75, speedWindow, function() speedWindow.Visible = false end)
-        closeBtn.Size = UDim2.new(0, 130, 0, 25); closeBtn.BackgroundColor3 = Color3.fromRGB(40, 10, 10)
-
-        -- 全体非表示キー設定 (Lキー)
-        _U_I.InputBegan:Connect(function(i, g) if not g and i.KeyCode == Enum.KeyCode.L then _UI_Visible = not _UI_Visible; main.Visible = _UI_Visible; speedWindow.Visible = _UI_Visible end end)
+        _U_I.InputBegan:Connect(function(i, g) if not g and i.KeyCode == Enum.KeyCode.L then _UI_Visible = not _UI_Visible; main.Visible = _UI_Visible end end)
     end
 
     task.spawn(function()
@@ -221,7 +198,6 @@ local function InitializeScript()
     task.defer(BuildMainUI)
 end
 
--- Key System
 local function BuildKeySystem()
     local savedData = ""
     pcall(function() if isfile and isfile(_SAVE_FILE) then savedData = readfile(_SAVE_FILE) end end)
