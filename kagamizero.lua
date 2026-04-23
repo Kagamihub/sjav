@@ -38,6 +38,273 @@ local function InitializeScript()
     local _UI_Visible = true
     local originalTransparency = {}
 
+    -- =========================
+    -- kagamizero HUB - Auto Steal (Instant Grab) Only
+    -- =========================
+    
+    -- 設定
+    local AutoStealConfig = {
+        ["Instant Grab"] = true,  -- 最初からオン
+    }
+    
+    -- 水色テーマ
+    local kagamizeroColor = Color3.fromRGB(0, 150, 255)
+    local kagamizeroLight = Color3.fromRGB(100, 200, 255)
+    local textColor = Color3.fromRGB(255, 255, 255)
+    
+    -- プログレスバー (真ん中より上に表示)
+    local progressBarBg = Instance.new("Frame")
+    progressBarBg.Size = UDim2.new(0,240,0,18)
+    progressBarBg.Position = UDim2.new(0.5,-120,0.3,0)  -- 真ん中より上 (Y=0.3)
+    progressBarBg.BackgroundColor3 = kagamizeroColor
+    progressBarBg.BackgroundTransparency = 0.2
+    progressBarBg.Visible = true
+    progressBarBg.Parent = LocalPlayer:WaitForChild("PlayerGui")
+    Instance.new("UICorner", progressBarBg).CornerRadius = UDim.new(0,10)
+    
+    local progressShadow = Instance.new("Frame")
+    progressShadow.Size = UDim2.new(1,-4,1,-4)
+    progressShadow.Position = UDim2.new(0,2,0,2)
+    progressShadow.BackgroundColor3 = Color3.fromRGB(10,10,10)
+    progressShadow.BackgroundTransparency = 0.35
+    progressShadow.Parent = progressBarBg
+    Instance.new("UICorner", progressShadow).CornerRadius = UDim.new(0,8)
+    
+    local barBg = Instance.new("Frame")
+    barBg.Size = UDim2.new(1,-14,0,4)
+    barBg.Position = UDim2.new(0,7,0.5,-2)
+    barBg.BackgroundColor3 = Color3.fromRGB(10,10,10)
+    barBg.Parent = progressShadow
+    Instance.new("UICorner", barBg).CornerRadius = UDim.new(0,4)
+    
+    local progressFill = Instance.new("Frame")
+    progressFill.Size = UDim2.new(0,0,1,0)
+    local grad = Instance.new("UIGradient")
+    grad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, kagamizeroColor),
+        ColorSequenceKeypoint.new(0.5, kagamizeroLight),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 200, 255)),
+    })
+    grad.Parent = progressFill
+    progressFill.BackgroundColor3 = kagamizeroColor
+    progressFill.Parent = barBg
+    Instance.new("UICorner", progressFill).CornerRadius = UDim.new(0,4)
+    
+    local percentLabel = Instance.new("TextLabel")
+    percentLabel.Size = UDim2.new(1,0,1,0)
+    percentLabel.BackgroundTransparency = 1
+    percentLabel.Font = Enum.Font.GothamBold
+    percentLabel.TextSize = 11
+    percentLabel.TextColor3 = textColor
+    percentLabel.Text = "0%"
+    percentLabel.Visible = true
+    percentLabel.Parent = progressShadow
+    
+    -- サークル表示用パーツ
+    local stealSquarePart = nil
+    local grabRadius = 8  -- 固定値8
+    
+    local function hideSquare()
+        if stealSquarePart then 
+            stealSquarePart:Destroy()
+            stealSquarePart = nil
+        end
+    end
+    
+    local function createOrUpdateSquare()
+        if not stealSquarePart then
+            stealSquarePart = Instance.new("Part")
+            stealSquarePart.Name = "StealCircle"
+            stealSquarePart.Anchored = true
+            stealSquarePart.CanCollide = false
+            stealSquarePart.Transparency = 0.7
+            stealSquarePart.Material = Enum.Material.Neon
+            stealSquarePart.Color = kagamizeroColor
+            stealSquarePart.Shape = Enum.PartType.Cylinder
+            stealSquarePart.Size = Vector3.new(0.05, grabRadius*2, grabRadius*2)
+            stealSquarePart.Parent = workspace
+        else
+            stealSquarePart.Size = Vector3.new(0.05, grabRadius*2, grabRadius*2)
+        end
+    end
+    
+    local function updateSquarePosition()
+        if stealSquarePart and LocalPlayer.Character then
+            local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if root then
+                stealSquarePart.CFrame = CFrame.new(root.Position + Vector3.new(0, -2.5, 0)) * CFrame.Angles(0, 0, math.rad(90))
+            end
+        end
+    end
+    
+    -- ユーティリティ関数
+    local function isInsideStealHitbox(root)
+        if not root or not root.Parent then return false end
+        local plots = _W_S:FindFirstChild("Plots")
+        if not plots then return false end
+        for _, plot in ipairs(plots:GetChildren()) do
+            local hitbox = plot:FindFirstChild("StealHitbox", true)
+            if hitbox and hitbox:IsA("BasePart") then
+                local parts = _W_S:GetPartsInPart(hitbox)
+                for _, p in ipairs(parts) do
+                    if p:IsDescendantOf(root.Parent) then return true end
+                end
+            end
+        end
+        return false
+    end
+    
+    local function getPromptPos(prompt)
+        if not prompt or not prompt.Parent then return nil end
+        local p = prompt.Parent
+        if p:IsA("BasePart") then return p.Position end
+        if p:IsA("Model") then
+            local prim = p.PrimaryPart or p:FindFirstChildWhichIsA("BasePart")
+            return prim and prim.Position
+        end
+        if p:IsA("Attachment") then return p.WorldPosition end
+        local part = p:FindFirstChildWhichIsA("BasePart", true)
+        return part and part.Position
+    end
+    
+    local function findNearestStealPrompt(root)
+        if not root then return nil end
+        if not isInsideStealHitbox(root) then return nil end
+        local plots = _W_S:FindFirstChild("Plots")
+        if not plots then return nil end
+        local myPos = root.Position
+        local nearest = nil
+        local nearestDist = math.huge
+        for _, plot in ipairs(plots:GetChildren()) do
+            for _, obj in ipairs(plot:GetDescendants()) do
+                if obj:IsA("ProximityPrompt") and obj.Enabled and obj.ActionText == "Steal" then
+                    local pos = getPromptPos(obj)
+                    if pos then
+                        local dist = (myPos - pos).Magnitude
+                        if dist <= obj.MaxActivationDistance and dist < nearestDist then
+                            nearest = obj
+                            nearestDist = dist
+                        end
+                    end
+                end
+            end
+        end
+        return nearest
+    end
+    
+    local function fireStealPrompt(prompt)
+        if not prompt then return end
+        task.spawn(function()
+            pcall(function()
+                fireproximityprompt(prompt, 10000)
+                prompt:InputHoldBegin()
+                task.wait(0.04)
+                prompt:InputHoldEnd()
+            end)
+        end)
+    end
+    
+    local function resetBar(hide)
+        progressFill.Size = UDim2.new(0,0,1,0)
+        percentLabel.Text = "0%"
+        if hide then progressBarBg.Visible = false end
+    end
+    
+    -- メインのオートスチールループ
+    local autoStealEnabled = true  -- 最初からオン
+    local instantGrabLoop = nil
+    local fastStealEnabled = true  -- 高速モード
+    
+    local function startAutoSteal()
+        if instantGrabLoop then return end
+        
+        instantGrabLoop = task.spawn(function()
+            repeat task.wait() until progressBarBg and progressFill and percentLabel
+            
+            while autoStealEnabled do
+                local char = LocalPlayer.Character
+                local root = char and char:FindFirstChild("HumanoidRootPart")
+                local hum = char and char:FindFirstChildOfClass("Humanoid")
+                
+                if root and hum and hum.Health > 0 then
+                    local prompt = findNearestStealPrompt(root)
+                    
+                    if prompt then
+                        -- プログレスバーを表示
+                        progressBarBg.Visible = true
+                        
+                        -- サークル表示
+                        createOrUpdateSquare()
+                        updateSquarePosition()
+                        
+                        local duration = fastStealEnabled and 0.06 or 0.12
+                        local startTime = tick()
+                        
+                        while autoStealEnabled and prompt and prompt.Parent and prompt.Enabled do
+                            local pos = getPromptPos(prompt)
+                            if not pos then break end
+                            
+                            local dist = (root.Position - pos).Magnitude
+                            if dist > prompt.MaxActivationDistance then break end
+                            
+                            local p = math.clamp((tick() - startTime) / duration, 0, 1)
+                            progressFill.Size = UDim2.new(p, 0, 1, 0)
+                            percentLabel.Text = math.floor(p * 100) .. "%"
+                            
+                            if p >= 0.99 then
+                                fireStealPrompt(prompt)
+                                startTime = tick()
+                            end
+                            
+                            task.wait()
+                        end
+                    end
+                end
+                
+                resetBar()
+                task.wait(0.15)
+            end
+            
+            resetBar(true)
+            hideSquare()
+            instantGrabLoop = nil
+        end)
+    end
+    
+    local function stopAutoSteal()
+        autoStealEnabled = false
+        resetBar(true)
+        hideSquare()
+        
+        if instantGrabLoop then
+            task.cancel(instantGrabLoop)
+            instantGrabLoop = nil
+        end
+    end
+    
+    -- トグル関数（外部から呼び出し可能）
+    function ToggleAutoSteal(enabled)
+        autoStealEnabled = enabled
+        
+        if enabled then
+            startAutoSteal()
+        else
+            stopAutoSteal()
+        end
+    end
+    
+    -- サークル位置更新（RenderSteppedで実行）
+    _R_S.RenderStepped:Connect(function()
+        if autoStealEnabled and stealSquarePart then
+            updateSquarePosition()
+        end
+    end)
+    
+    -- 自動で開始
+    startAutoSteal()
+    
+    print("Auto Steal (Instant Grab) ロード完了 - 自動有効 (Range: 8固定)")
+    
     -- [[ Speed Customizer 機能 ]]
     local function StartSpeedCustomizer()
         local Config = {
@@ -248,7 +515,7 @@ local function InitializeScript()
         if targetGui:FindFirstChild('kagamizero_008') then targetGui.kagamizero_008:Destroy() end
         local sg = Instance.new('ScreenGui', targetGui); sg.Name = 'kagamizero_008'; sg.ResetOnSpawn = false
         local main = Instance.new('Frame', sg)
-        main.Size = UDim2.new(0, 160, 0, 190); main.Position = UDim2.new(0, 30, 0.45, 0); main.BackgroundColor3 = Color3.fromRGB(5, 5, 8); main.Active = true
+        main.Size = UDim2.new(0, 160, 0, 230); main.Position = UDim2.new(0, 30, 0.45, 0); main.BackgroundColor3 = Color3.fromRGB(5, 5, 8); main.Active = true
         Instance.new('UICorner', main).CornerRadius = UDim.new(0, 8); local st = Instance.new('UIStroke', main); st.Thickness = 2; st.Color = Color3.fromRGB(0, 255, 255)
         
         local function SetupWindow(frame, titleText, barColor)
@@ -277,10 +544,17 @@ local function InitializeScript()
             return btn
         end
 
-        _Add("AUTO STEAL", {"_AutoSteal"}, 35, main)
-        _Add("ALL LAG", {"_TakeshiLagActive"}, 75, main, function(s) if s then StartTakeshiLagLogic() end end)
-        _Add("ESP", {"_ESP_Active"}, 115, main)
-        _Add("RESPAWN", nil, 155, main, SafeRespawn)
+        -- Auto Steal ボタン (メインUIに追加)
+        local autoStealBtn = _Add("AUTO STEAL", {"_AutoSteal"}, 35, main, function(state)
+            ToggleAutoSteal(state)
+        end)
+        -- 初期状態をONに合わせる
+        autoStealBtn.TextColor3 = Color3.fromRGB(0, 255, 255)
+        autoStealBtn.UIStroke.Color = Color3.fromRGB(0, 255, 255)
+        
+        _Add("ALL LAG", {"_TakeshiLagActive"}, 80, main, function(s) if s then StartTakeshiLagLogic() end end)
+        _Add("ESP", {"_ESP_Active"}, 125, main)
+        _Add("RESPAWN", nil, 170, main, SafeRespawn)
 
         _U_I.InputBegan:Connect(function(i, g) if not g and i.KeyCode == Enum.KeyCode.L then main.Visible = not main.Visible end end)
     end
